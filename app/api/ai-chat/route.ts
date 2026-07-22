@@ -95,17 +95,10 @@ Provide concise, actionable security advice. Include code examples when relevant
   } catch (error) {
     console.error("[AI Chat] Error:", error);
     
-    // Fallback to mock response on error (only if we have the data)
-    if (message && report) {
-      return NextResponse.json({
-        response: getMockResponse(message, report),
-        fallback: true,
-      });
-    }
-    
+    // Fallback to mock response on error
     return NextResponse.json({
-      response: "I apologize, but I encountered an error. Please try again.",
-      error: true,
+      response: getMockResponse(message, report),
+      fallback: true,
     });
   }
 }
