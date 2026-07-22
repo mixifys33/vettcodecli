@@ -8,98 +8,57 @@ export default function HeroSection() {
   const [progress, setProgress] = useState(0);
   const [loopCount, setLoopCount] = useState(0);
 
-  // 10-12 optimized scanning stages with key highlights
+  // 7 fast stages - 10 second total loop
   const scanStages = [
-    // Phase 1: Initialization
     { 
       type: "init", 
-      text: "$ vettcode scan --mode deep", 
-      delay: 1500,
+      text: "$ vettcode scan", 
+      delay: 800,
       showProgress: false 
     },
     { 
       type: "progress", 
-      text: "📂 Analyzing codebase...", 
-      progress: 15, 
-      delay: 1500,
+      text: "🔬 Static analysis + AST...", 
+      progress: 25, 
+      delay: 1200,
       showProgress: true,
-      subtext: "247 files • 32,458 lines of code"
-    },
-    
-    // Phase 2: Core Analysis
-    { 
-      type: "progress", 
-      text: "🔬 Running static analysis + AST parsing...", 
-      progress: 35, 
-      delay: 2000,
-      showProgress: true,
-      subtext: "Scanning 350+ vulnerability patterns"
+      subtext: "350+ patterns • 247 files"
     },
     { 
       type: "progress", 
-      text: "🔄 Data flow & dependency analysis...", 
+      text: "🔄 Data flow tracking...", 
       progress: 50, 
-      delay: 2000,
+      delay: 1200,
       showProgress: true,
-      subtext: "Tracking input → output vulnerabilities"
+      subtext: "Input → output analysis"
     },
-    
-    // Phase 3: Security Checks
     { 
       type: "progress", 
-      text: "🔐 Checking SQL injection, XSS, auth bypasses...", 
-      progress: 65, 
-      delay: 2000,
-      showProgress: true,
-      subtext: "Database & client-side security"
-    },
-    
-    // Phase 4: AI Reviews (3 stages)
-    { 
-      type: "ai", 
-      text: "🤖 AI Review #1: Semantic analysis...", 
+      text: "🔐 Security vulnerabilities...", 
       progress: 75, 
-      delay: 2200,
+      delay: 1200,
       showProgress: true,
-      subtext: "GPT-4 understanding code context"
+      subtext: "SQL, XSS, auth checks"
     },
     { 
       type: "ai", 
-      text: "🤖 AI Review #2: Business logic validation...", 
-      progress: 85, 
-      delay: 2200,
+      text: "🤖 AI deep analysis...", 
+      progress: 90, 
+      delay: 1400,
       showProgress: true,
-      subtext: "Claude analyzing security implications"
-    },
-    { 
-      type: "ai", 
-      text: "🤖 AI Review #3: Generating fix recommendations...", 
-      progress: 95, 
-      delay: 2200,
-      showProgress: true,
-      subtext: "AI crafting remediation steps"
-    },
-    
-    // Phase 5: Finalization
-    { 
-      type: "success", 
-      text: "✓ Verification complete (3.2% false positive rate)", 
-      delay: 1500,
-      showProgress: false 
+      subtext: "GPT-4 + Claude verification"
     },
     { 
       type: "progress", 
-      text: "📊 Generating interactive report...", 
+      text: "📊 Generating report...", 
       progress: 100, 
-      delay: 1500,
+      delay: 1200,
       showProgress: true
     },
-    
-    // Phase 6: Results
     { 
       type: "complete", 
       text: "✓ Scan complete!", 
-      delay: 2000,
+      delay: 1500,
       showProgress: false 
     },
   ];
@@ -115,12 +74,12 @@ export default function HeroSection() {
     const currentStage = scanStages[stage];
     
     if (stage >= scanStages.length) {
-      // Loop completed, restart after showing results
+      // Loop completed, restart after showing results briefly
       setTimeout(() => {
         setStage(0);
         setProgress(0);
         setLoopCount(prev => prev + 1);
-      }, 5000);
+      }, 2500); // Show results for 2.5s then restart
       return;
     }
 
