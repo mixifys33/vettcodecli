@@ -1,27 +1,205 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
 export default function HeroSection() {
-  const [scanPhase, setScanPhase] = useState<"scanning" | "results">("scanning");
+  const [stage, setStage] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [loopCount, setLoopCount] = useState(0);
+
+  // 10+ scanning stages with detailed technical information
+  const scanStages = [
+    // Phase 1: Initialization
+    { 
+      type: "init", 
+      text: "$ vettcode scan --mode deep", 
+      delay: 2000,
+      showProgress: false 
+    },
+    { 
+      type: "init", 
+      text: "🔍 Initializing security scanner...", 
+      delay: 1500,
+      showProgress: false 
+    },
+    { 
+      type: "progress", 
+      text: "📂 Collecting project files...", 
+      progress: 10, 
+      delay: 1800,
+      showProgress: true 
+    },
+    { 
+      type: "success", 
+      text: "✓ Files collected: 247 files", 
+      delay: 1200,
+      showProgress: false 
+    },
+    { 
+      type: "success", 
+      text: "✓ Total lines analyzed: 32,458", 
+      delay: 1200,
+      showProgress: false 
+    },
+    
+    // Phase 2: Static Analysis
+    { 
+      type: "progress", 
+      text: "🔬 Running static code analysis...", 
+      progress: 25, 
+      delay: 2000,
+      showProgress: true,
+      subtext: "Scanning for 350+ vulnerability patterns"
+    },
+    { 
+      type: "progress", 
+      text: "🌳 Building Abstract Syntax Tree (AST)...", 
+      progress: 35, 
+      delay: 2200,
+      showProgress: true,
+      subtext: "Deep code structure analysis"
+    },
+    { 
+      type: "progress", 
+      text: "🔄 Analyzing data flow & taint tracking...", 
+      progress: 45, 
+      delay: 2500,
+      showProgress: true,
+      subtext: "Tracking input → output vulnerabilities"
+    },
+    { 
+      type: "success", 
+      text: "✓ Control flow paths mapped: 1,284", 
+      delay: 1000,
+      showProgress: false 
+    },
+    
+    // Phase 3: Advanced Scanning
+    { 
+      type: "progress", 
+      text: "🧬 Cross-file reference analysis...", 
+      progress: 55, 
+      delay: 2000,
+      showProgress: true,
+      subtext: "Building dependency graph"
+    },
+    { 
+      type: "progress", 
+      text: "🔐 Detecting authentication bypasses...", 
+      progress: 62, 
+      delay: 1800,
+      showProgress: true,
+      subtext: "Auth & session validation"
+    },
+    { 
+      type: "progress", 
+      text: "💉 Scanning SQL/NoSQL injection vectors...", 
+      progress: 68, 
+      delay: 1800,
+      showProgress: true,
+      subtext: "Database security analysis"
+    },
+    { 
+      type: "progress", 
+      text: "🌐 Checking XSS & CSRF vulnerabilities...", 
+      progress: 72, 
+      delay: 1600,
+      showProgress: true,
+      subtext: "Client-side security scan"
+    },
+    
+    // Phase 4: AI-Powered Analysis (3 stages)
+    { 
+      type: "ai", 
+      text: "🤖 AI Review #1: Semantic code understanding...", 
+      progress: 78, 
+      delay: 2500,
+      showProgress: true,
+      subtext: "GPT-4 analyzing code context & intent"
+    },
+    { 
+      type: "ai", 
+      text: "🤖 AI Review #2: Business logic validation...", 
+      progress: 85, 
+      delay: 2500,
+      showProgress: true,
+      subtext: "Claude analyzing security implications"
+    },
+    { 
+      type: "ai", 
+      text: "🤖 AI Review #3: Fix recommendation generation...", 
+      progress: 92, 
+      delay: 2500,
+      showProgress: true,
+      subtext: "AI crafting precise remediation steps"
+    },
+    
+    // Phase 5: Verification & Reporting
+    { 
+      type: "progress", 
+      text: "🔍 Verifying findings & removing false positives...", 
+      progress: 96, 
+      delay: 2000,
+      showProgress: true,
+      subtext: "Multi-layer verification system"
+    },
+    { 
+      type: "success", 
+      text: "✓ False positives filtered: 87 issues (3.2% FP rate)", 
+      delay: 1500,
+      showProgress: false 
+    },
+    { 
+      type: "progress", 
+      text: "📊 Generating detailed security report...", 
+      progress: 100, 
+      delay: 1800,
+      showProgress: true,
+      subtext: "Creating interactive HTML report"
+    },
+    
+    // Phase 6: Results
+    { 
+      type: "complete", 
+      text: "✓ Scan complete! Report ready.", 
+      delay: 2000,
+      showProgress: false 
+    },
+  ];
+
+  const issuesData = [
+    { severity: "Critical", count: 3, color: "text-red-500", icon: "🔴" },
+    { severity: "High", count: 5, color: "text-orange-500", icon: "🟠" },
+    { severity: "Medium", count: 8, color: "text-yellow-500", icon: "🟡" },
+    { severity: "Low", count: 3, color: "text-gray-500", icon: "⚪" },
+  ];
 
   useEffect(() => {
-    // Simulate scanning progress
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => setScanPhase("results"), 500);
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, 100);
+    const currentStage = scanStages[stage];
+    
+    if (stage >= scanStages.length) {
+      // Loop completed, restart after showing results
+      setTimeout(() => {
+        setStage(0);
+        setProgress(0);
+        setLoopCount(prev => prev + 1);
+      }, 5000);
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    const timer = setTimeout(() => {
+      if (currentStage.showProgress && currentStage.progress) {
+        setProgress(currentStage.progress);
+      }
+      setStage(prev => prev + 1);
+    }, currentStage.delay);
+
+    return () => clearTimeout(timer);
+  }, [stage]);
+
+  const isScanning = stage < scanStages.length - 1;
+  const showResults = stage >= scanStages.length - 1;
 
   return (
     <section className="pt-32 pb-20 px-4">
@@ -128,14 +306,14 @@ export default function HeroSection() {
             </motion.div>
           </motion.div>
 
-          {/* Right: Terminal Demo with Animation */}
+          {/* Right: Advanced Terminal Demo with Continuous Loop */}
           <motion.div 
             className="lg:block"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <div className="terminal-window glow-green relative overflow-hidden">
+            <div className="terminal-window glow-green relative overflow-hidden min-h-[500px]">
               <div className="terminal-header">
                 <div className="terminal-dot red"></div>
                 <div className="terminal-dot yellow"></div>
@@ -143,148 +321,133 @@ export default function HeroSection() {
                 <span className="text-xs text-gray-500 ml-2">vettcode scan</span>
               </div>
               
-              {/* Scanning Phase */}
-              <motion.div 
-                className="p-6 font-mono text-sm space-y-2"
-                initial={{ opacity: 1 }}
-                animate={{ opacity: scanPhase === "scanning" ? 1 : 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <motion.div 
-                  className="text-primary"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  $ vettcode scan
-                </motion.div>
-                
-                <motion.div 
-                  className="text-gray-400 flex items-center gap-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"></div>
-                  Scanning project...
-                </motion.div>
-                
-                <motion.div
-                  className="w-full bg-gray-800 rounded-full h-2 overflow-hidden"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1 }}
-                >
+              <div className="p-6 font-mono text-sm space-y-2 min-h-[450px]">
+                <AnimatePresence mode="wait">
+                  {scanStages.slice(0, stage + 1).map((item, idx) => (
+                    <motion.div
+                      key={`${loopCount}-${idx}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {/* Main text */}
+                      <div className={`flex items-center gap-2 ${
+                        item.type === 'success' ? 'text-primary' :
+                        item.type === 'ai' ? 'text-purple-400' :
+                        item.type === 'complete' ? 'text-green-400' :
+                        'text-gray-300'
+                      }`}>
+                        {item.type === 'progress' && (
+                          <motion.div
+                            className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          />
+                        )}
+                        {item.text}
+                      </div>
+                      
+                      {/* Subtext */}
+                      {item.subtext && (
+                        <motion.div
+                          className="text-gray-500 text-xs ml-5 mt-1"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          {item.subtext}
+                        </motion.div>
+                      )}
+                      
+                      {/* Progress bar */}
+                      {item.showProgress && item.progress && (
+                        <motion.div
+                          className="w-full bg-gray-800 rounded-full h-2 overflow-hidden mt-2 ml-5"
+                          initial={{ opacity: 0, scaleX: 0 }}
+                          animate={{ opacity: 1, scaleX: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <motion.div
+                            className={`h-full ${
+                              item.type === 'ai' 
+                                ? 'bg-gradient-to-r from-purple-500 to-pink-500'
+                                : 'bg-gradient-to-r from-primary to-secondary'
+                            }`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${item.progress}%` }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                          />
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {/* Results Section */}
+                {showResults && (
                   <motion.div
-                    className="h-full bg-gradient-to-r from-primary to-secondary"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </motion.div>
-
-                {progress > 20 && (
-                  <motion.div 
-                    className="text-primary"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="mt-6 space-y-3"
                   >
-                    ✓ Files analyzed: 128
+                    <div className="text-yellow-400 font-semibold">📋 Issues Found:</div>
+                    
+                    {issuesData.map((issue, idx) => (
+                      <motion.div
+                        key={idx}
+                        className={`flex items-center gap-3 ${issue.color}`}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.15 }}
+                      >
+                        <span>{issue.icon}</span>
+                        <span className="font-semibold">{issue.count}</span>
+                        <span>{issue.severity}</span>
+                      </motion.div>
+                    ))}
+
+                    <motion.div
+                      className="text-primary pt-3"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      ✓ Report generated: vettcode-report-2024.html
+                    </motion.div>
+
+                    <motion.a
+                      href="#reports"
+                      className="inline-block mt-4 px-4 py-2 bg-primary/20 border border-primary/50 rounded-lg text-primary hover:bg-primary/30 transition"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      📊 View Full Demo Report →
+                    </motion.a>
+
+                    {/* Loop counter */}
+                    <motion.div
+                      className="text-gray-600 text-xs pt-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.5 }}
+                    >
+                      Loop #{loopCount + 1} • Restarting scan...
+                    </motion.div>
                   </motion.div>
                 )}
-                
-                {progress > 40 && (
-                  <motion.div 
-                    className="text-primary"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                  >
-                    ✓ Lines of code: 15,842
-                  </motion.div>
-                )}
-                
-                {progress > 60 && (
-                  <motion.div 
-                    className="text-yellow-400"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                  >
-                    ⚠ Analysis engine: Hybrid (Static + AST + AI)
-                  </motion.div>
-                )}
-              </motion.div>
-
-              {/* Results Phase */}
-              <motion.div 
-                className="absolute inset-0 p-6 font-mono text-sm space-y-2 bg-[#1a1a1a]"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ 
-                  opacity: scanPhase === "results" ? 1 : 0,
-                  y: scanPhase === "results" ? 0 : 20
-                }}
-                transition={{ duration: 0.6 }}
-                style={{ top: '44px' }}
-              >
-                <motion.div 
-                  className="text-gray-400 mb-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: scanPhase === "results" ? 1 : 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  Issues found:
-                </motion.div>
-                
-                {[
-                  { text: "  × 3  Critical", color: "text-red-500", delay: 0.4 },
-                  { text: "  × 5  High", color: "text-orange-500", delay: 0.5 },
-                  { text: "  × 8  Medium", color: "text-yellow-500", delay: 0.6 },
-                  { text: "  × 3  Low", color: "text-gray-500", delay: 0.7 }
-                ].map((item, idx) => (
-                  <motion.div 
-                    key={idx}
-                    className={item.color}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ 
-                      opacity: scanPhase === "results" ? 1 : 0,
-                      x: scanPhase === "results" ? 0 : -20
-                    }}
-                    transition={{ delay: item.delay }}
-                  >
-                    {item.text}
-                  </motion.div>
-                ))}
-                
-                <motion.div 
-                  className="text-primary pt-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: scanPhase === "results" ? 1 : 0 }}
-                  transition={{ delay: 0.9 }}
-                >
-                  ✓ Report generated: report.html
-                </motion.div>
-
-                <motion.a
-                  href="#reports"
-                  className="inline-block mt-4 px-4 py-2 bg-primary/20 border border-primary/50 rounded-lg text-primary hover:bg-primary/30 transition"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ 
-                    opacity: scanPhase === "results" ? 1 : 0,
-                    scale: scanPhase === "results" ? 1 : 0.9
-                  }}
-                  transition={{ delay: 1.1 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  View Demo Report →
-                </motion.a>
-              </motion.div>
+              </div>
             </div>
 
             {/* Platform badges */}
             <motion.div 
               className="mt-6 flex items-center justify-center gap-4 text-gray-500 text-sm"
               initial={{ opacity: 0 }}
-              animate={{ opacity: scanPhase === "results" ? 1 : 0 }}
+              animate={{ opacity: showResults ? 1 : 0 }}
               transition={{ delay: 1.3 }}
             >
               <span>Works on</span>
@@ -294,7 +457,7 @@ export default function HeroSection() {
                     key={idx}
                     className="w-6 h-6 bg-gray-800 rounded flex items-center justify-center"
                     initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: scanPhase === "results" ? 1 : 0, rotate: 0 }}
+                    animate={{ scale: showResults ? 1 : 0, rotate: 0 }}
                     transition={{ delay: 1.4 + idx * 0.1, type: "spring" }}
                     whileHover={{ scale: 1.2, rotate: 360 }}
                   >
