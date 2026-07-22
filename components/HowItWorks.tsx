@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 export default function HowItWorks() {
   const steps = [
     {
@@ -45,28 +47,58 @@ export default function HowItWorks() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {steps.map((step, idx) => (
-            <div key={idx} className="relative">
+            <motion.div 
+              key={idx} 
+              className="relative"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: idx * 0.2 }}
+            >
               {/* Connector line */}
               {idx < steps.length - 1 && (
-                <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent -translate-x-1/2"></div>
+                <motion.div 
+                  className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent -translate-x-1/2"
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: idx * 0.2 + 0.5 }}
+                />
               )}
 
-              <div className="bg-dark border border-gray-800 rounded-xl p-8 hover:border-primary/30 transition text-center">
+              <motion.div 
+                className="bg-dark border border-gray-800 rounded-xl p-8 hover:border-primary/30 transition text-center"
+                whileHover={{ scale: 1.05, y: -10 }}
+              >
                 {/* Number badge */}
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-primary">
+                <motion.div 
+                  className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-primary"
+                  animate={{ 
+                    boxShadow: [
+                      "0 0 20px rgba(16, 185, 129, 0.3)",
+                      "0 0 40px rgba(16, 185, 129, 0.6)",
+                      "0 0 20px rgba(16, 185, 129, 0.3)"
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
                   <span className="text-2xl font-bold text-primary">{step.number}</span>
-                </div>
+                </motion.div>
 
                 {/* Icon */}
-                <div className="text-primary mb-4 flex justify-center">
+                <motion.div 
+                  className="text-primary mb-4 flex justify-center"
+                  whileHover={{ rotate: 360, scale: 1.2 }}
+                  transition={{ duration: 0.6 }}
+                >
                   {step.icon}
-                </div>
+                </motion.div>
 
                 {/* Content */}
                 <h3 className="text-2xl font-semibold mb-3">{step.title}</h3>
                 <p className="text-gray-400">{step.description}</p>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           ))}
         </div>
 

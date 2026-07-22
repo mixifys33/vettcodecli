@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 export default function FeaturesGrid() {
   const features = [
     {
@@ -72,16 +74,25 @@ export default function FeaturesGrid() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, idx) => (
-            <div
+            <motion.div
               key={idx}
-              className="bg-dark/50 border border-gray-800 rounded-xl p-6 hover:border-primary/30 hover:bg-dark/70 transition group"
+              className="bg-dark/50 border border-gray-800 rounded-xl p-6 hover:border-primary/30 hover:bg-dark/70 transition group cursor-pointer"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              whileHover={{ scale: 1.05, y: -5 }}
             >
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 text-primary group-hover:bg-primary/20 transition">
+              <motion.div 
+                className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 text-primary group-hover:bg-primary/20 transition"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+              >
                 {feature.icon}
-              </div>
+              </motion.div>
               <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
               <p className="text-gray-400">{feature.description}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

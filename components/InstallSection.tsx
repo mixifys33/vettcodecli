@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function InstallSection() {
   const [copied, setCopied] = useState(false);
@@ -31,9 +32,14 @@ export default function InstallSection() {
         </p>
 
         {/* Package manager tabs */}
-        <div className="flex justify-center gap-2 mb-4">
+        <motion.div 
+          className="flex justify-center gap-2 mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
           {commands.map((cmd, idx) => (
-            <button
+            <motion.button
               key={idx}
               onClick={() => setActiveTab(idx)}
               className={`px-6 py-2 rounded-lg font-semibold transition ${
@@ -41,26 +47,50 @@ export default function InstallSection() {
                   ? "bg-primary text-white"
                   : "bg-gray-800 text-gray-400 hover:bg-gray-700"
               }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {cmd.label}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         {/* Command display */}
-        <div className="relative bg-[#0d0d0d] border border-gray-800 rounded-lg p-6 flex items-center justify-between group">
-          <code className="text-primary text-lg font-mono flex-1 text-left">
+        <motion.div 
+          className="relative bg-[#0d0d0d] border border-gray-800 rounded-lg p-6 flex items-center justify-between group"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+        >
+          <motion.code 
+            className="text-primary text-lg font-mono flex-1 text-left"
+            key={activeTab}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             {commands[activeTab].cmd}
-          </code>
-          <button
+          </motion.code>
+          <motion.button
             onClick={() => copyToClipboard(commands[activeTab].cmd)}
             className="px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-lg transition flex items-center gap-2"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             {copied ? (
               <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <motion.svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring" }}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                </motion.svg>
                 Copied!
               </>
             ) : (
@@ -71,8 +101,8 @@ export default function InstallSection() {
                 Copy
               </>
             )}
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
         {/* Run your first scan */}
         <div className="mt-8 text-left max-w-2xl mx-auto">
