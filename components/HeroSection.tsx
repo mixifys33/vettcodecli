@@ -8,161 +8,97 @@ export default function HeroSection() {
   const [progress, setProgress] = useState(0);
   const [loopCount, setLoopCount] = useState(0);
 
-  // 10+ scanning stages with detailed technical information
+  // 10-12 optimized scanning stages with key highlights
   const scanStages = [
     // Phase 1: Initialization
     { 
       type: "init", 
       text: "$ vettcode scan --mode deep", 
-      delay: 2000,
-      showProgress: false 
-    },
-    { 
-      type: "init", 
-      text: "🔍 Initializing security scanner...", 
       delay: 1500,
       showProgress: false 
     },
     { 
       type: "progress", 
-      text: "📂 Collecting project files...", 
-      progress: 10, 
-      delay: 1800,
-      showProgress: true 
-    },
-    { 
-      type: "success", 
-      text: "✓ Files collected: 247 files", 
-      delay: 1200,
-      showProgress: false 
-    },
-    { 
-      type: "success", 
-      text: "✓ Total lines analyzed: 32,458", 
-      delay: 1200,
-      showProgress: false 
+      text: "📂 Analyzing codebase...", 
+      progress: 15, 
+      delay: 1500,
+      showProgress: true,
+      subtext: "247 files • 32,458 lines of code"
     },
     
-    // Phase 2: Static Analysis
+    // Phase 2: Core Analysis
     { 
       type: "progress", 
-      text: "🔬 Running static code analysis...", 
-      progress: 25, 
+      text: "🔬 Running static analysis + AST parsing...", 
+      progress: 35, 
       delay: 2000,
       showProgress: true,
-      subtext: "Scanning for 350+ vulnerability patterns"
+      subtext: "Scanning 350+ vulnerability patterns"
     },
     { 
       type: "progress", 
-      text: "🌳 Building Abstract Syntax Tree (AST)...", 
-      progress: 35, 
-      delay: 2200,
-      showProgress: true,
-      subtext: "Deep code structure analysis"
-    },
-    { 
-      type: "progress", 
-      text: "🔄 Analyzing data flow & taint tracking...", 
-      progress: 45, 
-      delay: 2500,
+      text: "🔄 Data flow & dependency analysis...", 
+      progress: 50, 
+      delay: 2000,
       showProgress: true,
       subtext: "Tracking input → output vulnerabilities"
     },
-    { 
-      type: "success", 
-      text: "✓ Control flow paths mapped: 1,284", 
-      delay: 1000,
-      showProgress: false 
-    },
     
-    // Phase 3: Advanced Scanning
+    // Phase 3: Security Checks
     { 
       type: "progress", 
-      text: "🧬 Cross-file reference analysis...", 
-      progress: 55, 
+      text: "🔐 Checking SQL injection, XSS, auth bypasses...", 
+      progress: 65, 
       delay: 2000,
       showProgress: true,
-      subtext: "Building dependency graph"
-    },
-    { 
-      type: "progress", 
-      text: "🔐 Detecting authentication bypasses...", 
-      progress: 62, 
-      delay: 1800,
-      showProgress: true,
-      subtext: "Auth & session validation"
-    },
-    { 
-      type: "progress", 
-      text: "💉 Scanning SQL/NoSQL injection vectors...", 
-      progress: 68, 
-      delay: 1800,
-      showProgress: true,
-      subtext: "Database security analysis"
-    },
-    { 
-      type: "progress", 
-      text: "🌐 Checking XSS & CSRF vulnerabilities...", 
-      progress: 72, 
-      delay: 1600,
-      showProgress: true,
-      subtext: "Client-side security scan"
+      subtext: "Database & client-side security"
     },
     
-    // Phase 4: AI-Powered Analysis (3 stages)
+    // Phase 4: AI Reviews (3 stages)
     { 
       type: "ai", 
-      text: "🤖 AI Review #1: Semantic code understanding...", 
-      progress: 78, 
-      delay: 2500,
+      text: "🤖 AI Review #1: Semantic analysis...", 
+      progress: 75, 
+      delay: 2200,
       showProgress: true,
-      subtext: "GPT-4 analyzing code context & intent"
+      subtext: "GPT-4 understanding code context"
     },
     { 
       type: "ai", 
       text: "🤖 AI Review #2: Business logic validation...", 
       progress: 85, 
-      delay: 2500,
+      delay: 2200,
       showProgress: true,
       subtext: "Claude analyzing security implications"
     },
     { 
       type: "ai", 
-      text: "🤖 AI Review #3: Fix recommendation generation...", 
-      progress: 92, 
-      delay: 2500,
+      text: "🤖 AI Review #3: Generating fix recommendations...", 
+      progress: 95, 
+      delay: 2200,
       showProgress: true,
-      subtext: "AI crafting precise remediation steps"
+      subtext: "AI crafting remediation steps"
     },
     
-    // Phase 5: Verification & Reporting
-    { 
-      type: "progress", 
-      text: "🔍 Verifying findings & removing false positives...", 
-      progress: 96, 
-      delay: 2000,
-      showProgress: true,
-      subtext: "Multi-layer verification system"
-    },
+    // Phase 5: Finalization
     { 
       type: "success", 
-      text: "✓ False positives filtered: 87 issues (3.2% FP rate)", 
+      text: "✓ Verification complete (3.2% false positive rate)", 
       delay: 1500,
       showProgress: false 
     },
     { 
       type: "progress", 
-      text: "📊 Generating detailed security report...", 
+      text: "📊 Generating interactive report...", 
       progress: 100, 
-      delay: 1800,
-      showProgress: true,
-      subtext: "Creating interactive HTML report"
+      delay: 1500,
+      showProgress: true
     },
     
     // Phase 6: Results
     { 
       type: "complete", 
-      text: "✓ Scan complete! Report ready.", 
+      text: "✓ Scan complete!", 
       delay: 2000,
       showProgress: false 
     },
