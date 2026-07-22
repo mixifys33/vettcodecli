@@ -5,8 +5,14 @@ import { NextRequest, NextResponse } from "next/server";
  * AI assistant for security report analysis using OpenRouter
  */
 export async function POST(request: NextRequest) {
+  let message = "";
+  let report: any = null;
+
   try {
-    const { message, report, history } = await request.json();
+    const body = await request.json();
+    message = body.message;
+    report = body.report;
+    const history = body.history;
 
     if (!message || !report) {
       return NextResponse.json(
@@ -89,10 +95,17 @@ Provide concise, actionable security advice. Include code examples when relevant
   } catch (error) {
     console.error("[AI Chat] Error:", error);
     
-    // Fallback to mock response on error
+    // Fallback to mock response on error (only if we have the data)
+    if (message && report) {
+      return NextResponse.json({
+        response: getMockResponse(message, report),
+        fallback: true,
+      });
+    }
+    
     return NextResponse.json({
-      response: getMockResponse(message, report),
-      fallback: true,
+      response: "I apologize, but I encountered an error. Please try again.",
+      error: true,
     });
   }
 }
