@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 
 /**
  * GET /api/reports/[id]
- * Fetch a report by ID with expiration check
+ * Fetch report directly from ImageKit
  */
 export async function GET(
   request: NextRequest,
@@ -20,42 +18,74 @@ export async function GET(
       );
     }
 
-    // Load report from storage
-    const reportsDir = path.join(process.cwd(), "data", "reports");
-    const reportPath = path.join(reportsDir, `${reportId}.json`);
+    // Construct ImageKit URL from report ID
+    const imageKitUrl = `https://ik.imagekit.io/HackerX1234567/vettcode-reports/${reportId}.json`;
     
-    try {
-      const fileContent = await fs.readFile(reportPath, "utf-8");
-      const reportData = JSON.parse(fileContent);
-      
-      // Check expiration (7 days)
-      const expiresAt = new Date(reportData.expiresAt);
-      if (new Date() > expiresAt) {
-        // Delete expired report
-        await fs.unlink(reportPath);
-        return NextResponse.json(
-          { error: "Report has expired" },
-          { status: 410 } // 410 Gone
-        );
+    console.log('[Report Fetch] Fetching from ImageKit:', imageKitUrl);
+    
+    // Fetch report from ImageKit with retry
+    let response;
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await fetch(imageKitUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          cache: 'no-store', // Don't cache to get latest
+        });
+        
+        if (response.ok) break;
+        
+        lastError = new Error(`ImageKit returned ${response.status}`);
+        
+        // Wait before retry
+        if (attempt < 2) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Fetch failed');
       }
+    }
+    
+    if (!response || !response.ok) {
+      console.error('[Report Fetch] Failed to fetch from ImageKit:', lastError);
       
-      return NextResponse.json({
-        success: true,
-        report: reportData,
-      });
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      if (response?.status === 404) {
         return NextResponse.json(
-          { error: "Report not found" },
+          { error: "Report not found or expired", details: "The report may have been deleted or the URL is incorrect" },
           { status: 404 }
         );
       }
-      throw error;
+      
+      return NextResponse.json(
+        { error: "Failed to load report", details: lastError?.message || 'Unknown error' },
+        { status: 500 }
+      );
     }
+    
+    const reportData = await response.json();
+    
+    // Check expiration
+    if (reportData.expiresAt && new Date() > new Date(reportData.expiresAt)) {
+      return NextResponse.json(
+        { error: "Report has expired" },
+        { status: 410 }
+      );
+    }
+    
+    console.log('[Report Fetch] Successfully loaded report:', reportId);
+    
+    return NextResponse.json({
+      success: true,
+      report: reportData,
+    });
   } catch (error) {
     console.error("[Report Fetch] Error:", error);
     return NextResponse.json(
-      { error: "Failed to load report" },
+      { error: "Failed to load report", details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

@@ -1,50 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 
 /**
  * POST /api/reports/upload
- * Upload a new report from CLI
+ * Receive report metadata from CLI (report is already on ImageKit)
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
     // Validate required fields
-    if (!body.report || !body.projectName) {
+    if (!body.reportId || !body.imageKitUrl) {
       return NextResponse.json(
-        { error: "Missing required fields: report, projectName" },
+        { error: "Missing required fields: reportId, imageKitUrl" },
         { status: 400 }
       );
     }
 
-    const { report, projectName, scanMode } = body;
+    const { reportId, imageKitUrl, projectName, expiresAt } = body;
 
-    // Generate unique report ID
-    const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Create reports directory
-    const reportsDir = path.join(process.cwd(), "data", "reports");
-    await fs.mkdir(reportsDir, { recursive: true });
-    
-    // Set expiration (7 days from now)
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-    
-    const reportData = {
-      id: reportId,
-      projectName,
-      ...report,
-      scanMode: scanMode || "quick",
-      createdAt: new Date().toISOString(),
-      expiresAt: expiresAt.toISOString(),
-    };
-    
-    // Save report
-    const reportPath = path.join(reportsDir, `${reportId}.json`);
-    await fs.writeFile(reportPath, JSON.stringify(reportData, null, 2), "utf-8");
-
-    // Generate shareable URL
+    // Generate landing page URL
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vettcodecli.vercel.app";
     const reportUrl = `${baseUrl}/reports/${reportId}`;
 
@@ -52,13 +26,15 @@ export async function POST(request: NextRequest) {
       success: true,
       reportId,
       reportUrl,
-      expiresAt: expiresAt.toISOString(),
-      message: "Report uploaded successfully",
+      imageKitUrl,
+      expiresAt,
+      message: "Report registered successfully",
     });
   } catch (error) {
     console.error("[Report Upload] Error:", error);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to upload report" },
+      { error: "Failed to register report", details: errorMsg },
       { status: 500 }
     );
   }
