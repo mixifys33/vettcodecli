@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { API_CONFIG, getApiUrl } from "@/lib/api-config";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,7 +19,12 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
+    // Show loading toast
+    const loadingToast = toast.loading('Signing in...');
+
     try {
+      console.log('Attempting login to:', getApiUrl(API_CONFIG.ENDPOINTS.LOGIN));
+      
       const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGIN), {
         method: "POST",
         headers: {
@@ -27,7 +33,9 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('Login response status:', response.status);
       const data = await response.json();
+      console.log('Login response data:', data);
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
@@ -38,10 +46,18 @@ export default function LoginPage() {
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.DEVELOPER, JSON.stringify(data.developer));
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTHENTICATED, "true");
 
-      // Redirect to dashboard
-      window.location.href = "/dashboard";
+      // Success toast
+      toast.success('Login successful! Redirecting...', { id: loadingToast });
+
+      // Wait a moment before redirect
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 500);
     } catch (err: any) {
-      setError(err.message || "An error occurred during login");
+      console.error('Login error:', err);
+      const errorMessage = err.message || "An error occurred during login";
+      setError(errorMessage);
+      toast.error(errorMessage, { id: loadingToast });
     } finally {
       setLoading(false);
     }
@@ -49,6 +65,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex items-center justify-center px-4 py-12">
+      {/* Toast Notifications */}
+      <Toaster position="top-center" />
+      
       {/* Background decorations */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />

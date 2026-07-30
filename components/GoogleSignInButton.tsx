@@ -56,9 +56,13 @@ export default function GoogleSignInButton({
 
   const handleCredentialResponse = async (response: any) => {
     setLoading(true);
+    console.log('Google Sign-In: Received credential');
 
     try {
-      const res = await fetch(getApiUrl("/api/google-auth/verify"), {
+      const apiUrl = getApiUrl("/api/google-auth/verify");
+      console.log('Google Sign-In: Calling API:', apiUrl);
+      
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +72,9 @@ export default function GoogleSignInButton({
         }),
       });
 
+      console.log('Google Sign-In: API response status:', res.status);
       const data = await res.json();
+      console.log('Google Sign-In: API response data:', data);
 
       if (!res.ok) {
         throw new Error(data.message || "Google sign-in failed");
@@ -79,13 +85,18 @@ export default function GoogleSignInButton({
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.DEVELOPER, JSON.stringify(data.developer));
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTHENTICATED, "true");
 
+      console.log('Google Sign-In: Success! Redirecting...');
+
       if (onSuccess) {
         onSuccess(data);
       } else {
         // Default: redirect to dashboard
-        window.location.href = "/dashboard";
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 500);
       }
     } catch (err: any) {
+      console.error('Google Sign-In: Error:', err);
       const errorMessage = err.message || "An error occurred with Google sign-in";
       if (onError) {
         onError(errorMessage);
