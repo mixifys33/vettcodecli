@@ -32,13 +32,15 @@ export default function DocsPage() {
   const [activeSection, setActiveSection] = useState("installation");
 
   const sections = [
+    { id: "what-is-vettcode", title: "What is VettCode?", icon: HelpCircle },
     { id: "installation", title: "Installation", icon: Package },
-    { id: "quick-start", title: "Quick Start", icon: Zap },
-    { id: "commands", title: "Commands", icon: Terminal },
+    { id: "quick-start", title: "Quick Start Guide", icon: Rocket },
+    { id: "step-by-step", title: "Step-by-Step Tutorial", icon: Zap },
     { id: "scan-modes", title: "Scan Modes", icon: Search },
+    { id: "commands", title: "All Commands", icon: Terminal },
     { id: "output-options", title: "Output Options", icon: FileOutput },
     { id: "interactive-ui", title: "Interactive UI", icon: Monitor },
-    { id: "examples", title: "Examples", icon: Lightbulb },
+    { id: "examples", title: "Real Examples", icon: Lightbulb },
     { id: "troubleshooting", title: "Troubleshooting", icon: Wrench },
   ];
 
@@ -94,6 +96,91 @@ export default function DocsPage() {
 
             {/* Main Content */}
             <div className="flex-1 space-y-12">
+              {/* What is VettCode Section */}
+              <section id="what-is-vettcode" className="doc-section">
+                <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+                  <HelpCircle className="w-8 h-8 text-primary" /> What is VettCode?
+                </h2>
+                
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 rounded-lg p-6">
+                    <p className="text-lg text-gray-300 mb-4">
+                      VettCode CLI is a powerful security scanner that helps you find vulnerabilities in your code <strong className="text-white">before they become problems</strong>.
+                    </p>
+                    <p className="text-gray-300">
+                      Think of it as a security expert that reviews your code automatically, checking for common mistakes and security issues that hackers could exploit.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 text-primary">Why Use VettCode?</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-4">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                          <div>
+                            <h4 className="font-semibold text-white mb-1">Find Security Issues Early</h4>
+                            <p className="text-sm text-gray-400">Catch vulnerabilities before your code goes to production</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-4">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                          <div>
+                            <h4 className="font-semibold text-white mb-1">AI-Powered Analysis</h4>
+                            <p className="text-sm text-gray-400">Advanced AI detects complex security patterns</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-4">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                          <div>
+                            <h4 className="font-semibold text-white mb-1">Easy to Use</h4>
+                            <p className="text-sm text-gray-400">Just one command to scan your entire project</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-4">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                          <div>
+                            <h4 className="font-semibold text-white mb-1">Detailed Reports</h4>
+                            <p className="text-sm text-gray-400">Get clear, actionable reports you can share with your team</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-blue-400 flex items-center gap-2">
+                      <Info className="w-5 h-5" />
+                      Perfect For
+                    </h3>
+                    <ul className="space-y-2 text-gray-300">
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary">•</span>
+                        <span>Developers who want to write secure code</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary">•</span>
+                        <span>Teams preparing for security audits</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary">•</span>
+                        <span>Projects that need automated security checks</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary">•</span>
+                        <span>Anyone who cares about application security</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
               {/* Installation Section */}
               <section id="installation" className="doc-section">
                 <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
@@ -138,27 +225,67 @@ export default function DocsPage() {
               {/* Quick Start Section */}
               <section id="quick-start" className="doc-section">
                 <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                  <Zap className="w-8 h-8 text-primary" /> Quick Start
+                  <Rocket className="w-8 h-8 text-primary" /> Quick Start Guide
                 </h2>
                 
                 <div className="space-y-6">
                   <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 rounded-lg p-6">
-                    <h3 className="text-xl font-semibold mb-3">Your First Scan</h3>
-                    <p className="text-gray-300 mb-4">
-                      Navigate to your project directory and run:
-                    </p>
-                    <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-4">
-                      <code className="text-green-400">vettcode .</code>
+                    <h3 className="text-xl font-semibold mb-4">Get Started in 3 Steps</h3>
+                    
+                    <div className="space-y-6">
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                          1
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-white mb-2">Open Your Terminal</h4>
+                          <p className="text-gray-300 mb-3">
+                            Open your command line/terminal application:
+                          </p>
+                          <ul className="text-sm text-gray-400 space-y-1">
+                            <li>• Windows: Press <kbd className="bg-gray-800 px-2 py-1 rounded">Win + R</kbd>, type <code className="text-primary">cmd</code></li>
+                            <li>• Mac: Press <kbd className="bg-gray-800 px-2 py-1 rounded">Cmd + Space</kbd>, type <code className="text-primary">terminal</code></li>
+                            <li>• Linux: Press <kbd className="bg-gray-800 px-2 py-1 rounded">Ctrl + Alt + T</kbd></li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                          2
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-white mb-2">Navigate to Your Project</h4>
+                          <p className="text-gray-300 mb-3">
+                            Use the <code className="text-primary bg-gray-800 px-2 py-1 rounded">cd</code> command to go to your project folder:
+                          </p>
+                          <div className="bg-gray-950 rounded p-3">
+                            <code className="text-green-400">cd /path/to/your/project</code>
+                          </div>
+                          <p className="text-sm text-gray-400 mt-2">
+                            Example: <code className="text-primary bg-gray-800 px-1 rounded">cd C:\Users\YourName\Projects\my-app</code>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                          3
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-white mb-2">Run VettCode</h4>
+                          <p className="text-gray-300 mb-3">
+                            Type this command and press Enter:
+                          </p>
+                          <div className="bg-gray-950 rounded p-3">
+                            <code className="text-green-400">vettcode .</code>
+                          </div>
+                          <p className="text-sm text-gray-400 mt-2">
+                            The <code className="text-primary bg-gray-800 px-1 rounded">.</code> means "scan the current folder"
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-gray-400 mt-4 text-sm">
-                      This will:
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 text-gray-400 mt-2 text-sm">
-                      <li>Scan all code files in the current directory</li>
-                      <li>Run AI-powered security analysis</li>
-                      <li>Generate a detailed HTML report</li>
-                      <li>Upload the report and provide a shareable link (expires in 4 days)</li>
-                    </ul>
                   </div>
 
                   <div>
@@ -196,10 +323,224 @@ export default function DocsPage() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-green-400 flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5" />
+                      That's It!
+                    </h3>
+                    <p className="text-gray-300">
+                      VettCode will scan your code and give you a report showing any security issues it found. 
+                      You'll get a link to view the full report in your browser.
+                    </p>
+                  </div>
                 </div>
               </section>
-              {/* Commands Section */}
-              <section id="commands" className="doc-section">
+
+              {/* Step-by-Step Tutorial Section */}
+              <section id="step-by-step" className="doc-section">
+                <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+                  <Zap className="w-8 h-8 text-primary" /> Step-by-Step Tutorial
+                </h2>
+                
+                <div className="space-y-6">
+                  <p className="text-lg text-gray-300">
+                    Follow this detailed walkthrough to perform your first security scan.
+                  </p>
+
+                  {/* Step 1 */}
+                  <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                        1
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-white mb-2">Prepare Your Project</h3>
+                        <p className="text-gray-300">
+                          Make sure you have a code project ready to scan. VettCode works with:
+                        </p>
+                      </div>
+                    </div>
+                    <div className="ml-16 space-y-3">
+                      <div className="bg-gray-950 rounded p-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                          <div className="text-gray-300">✓ JavaScript (.js)</div>
+                          <div className="text-gray-300">✓ TypeScript (.ts)</div>
+                          <div className="text-gray-300">✓ Python (.py)</div>
+                          <div className="text-gray-300">✓ Java (.java)</div>
+                          <div className="text-gray-300">✓ React (.jsx, .tsx)</div>
+                          <div className="text-gray-300">✓ PHP (.php)</div>
+                          <div className="text-gray-300">✓ Ruby (.rb)</div>
+                          <div className="text-gray-300">✓ And more!</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                        2
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-white mb-2">Open Terminal in Your Project</h3>
+                        <p className="text-gray-300 mb-3">
+                          Navigate to your project folder using one of these methods:
+                        </p>
+                      </div>
+                    </div>
+                    <div className="ml-16 space-y-4">
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Method 1: Using File Explorer (Easiest)</h4>
+                        <ul className="space-y-2 text-gray-300 text-sm">
+                          <li>• Open your project folder in File Explorer (Windows) or Finder (Mac)</li>
+                          <li>• Right-click in an empty space</li>
+                          <li>• Select "Open in Terminal" or "Open Command Window Here"</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Method 2: Using cd Command</h4>
+                        <div className="bg-gray-950 rounded p-3">
+                          <code className="text-green-400">cd C:\Users\YourName\Projects\my-app</code>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-primary mb-2">Method 3: VS Code Users</h4>
+                        <ul className="space-y-2 text-gray-300 text-sm">
+                          <li>• Open your project in VS Code</li>
+                          <li>• Press <kbd className="bg-gray-800 px-2 py-1 rounded">Ctrl + `</kbd> (backtick) to open terminal</li>
+                          <li>• Terminal opens in your project folder automatically</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                        3
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-white mb-2">Choose Your Scan Mode</h3>
+                        <p className="text-gray-300 mb-3">
+                          Pick the scan type that fits your needs:
+                        </p>
+                      </div>
+                    </div>
+                    <div className="ml-16 space-y-3">
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded p-4">
+                        <h4 className="font-semibold text-blue-400 mb-2">Quick Scan (Recommended for First Time)</h4>
+                        <div className="bg-gray-950 rounded p-3 mb-2">
+                          <code className="text-green-400">vettcode .</code>
+                        </div>
+                        <p className="text-sm text-gray-400">Takes ~30 seconds. Good for regular checks.</p>
+                      </div>
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded p-4">
+                        <h4 className="font-semibold text-purple-400 mb-2">Deep Scan (Most Thorough)</h4>
+                        <div className="bg-gray-950 rounded p-3 mb-2">
+                          <code className="text-green-400">vettcode . --mode deep</code>
+                        </div>
+                        <p className="text-sm text-gray-400">Takes ~2-3 minutes. Scans every file in detail.</p>
+                      </div>
+                      <div className="bg-green-500/10 border border-green-500/30 rounded p-4">
+                        <h4 className="font-semibold text-green-400 mb-2">Fast Scan (No AI, Offline)</h4>
+                        <div className="bg-gray-950 rounded p-3 mb-2">
+                          <code className="text-green-400">vettcode . --no-ai</code>
+                        </div>
+                        <p className="text-sm text-gray-400">Takes ~30 seconds. Works without internet.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                        4
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-white mb-2">Wait for Scan to Complete</h3>
+                        <p className="text-gray-300 mb-3">
+                          You'll see progress updates as VettCode scans your code:
+                        </p>
+                      </div>
+                    </div>
+                    <div className="ml-16">
+                      <div className="bg-gray-950 rounded p-4 font-mono text-sm space-y-1">
+                        <div className="text-blue-400">🔍 Scanning files...</div>
+                        <div className="text-yellow-400">⚡ Running static analysis...</div>
+                        <div className="text-purple-400">🤖 AI analyzing code...</div>
+                        <div className="text-green-400">✓ Generating report...</div>
+                        <div className="text-primary">📊 Uploading report...</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 5 */}
+                  <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg border border-gray-800 p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                        5
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-white mb-2">View Your Report</h3>
+                        <p className="text-gray-300 mb-3">
+                          When the scan finishes, you'll get:
+                        </p>
+                      </div>
+                    </div>
+                    <div className="ml-16 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-1" />
+                        <div>
+                          <strong className="text-white">A shareable web link</strong>
+                          <p className="text-sm text-gray-400">Click to view your report in the browser</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-1" />
+                        <div>
+                          <strong className="text-white">Local HTML file</strong>
+                          <p className="text-sm text-gray-400">Saved in <code className="text-primary bg-gray-800 px-1 rounded">.vettcode-reports</code> folder</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-1" />
+                        <div>
+                          <strong className="text-white">Summary in terminal</strong>
+                          <p className="text-sm text-gray-400">Quick overview of findings</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sample Report */}
+                  <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-primary flex items-center gap-2">
+                      <ExternalLink className="w-5 h-5" />
+                      See a Sample Report
+                    </h3>
+                    <p className="text-gray-300 mb-4">
+                      Not sure what to expect? Check out this example report:
+                    </p>
+                    <a 
+                      href="https://vettcode.com/report/samplereport" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-primary hover:bg-secondary text-white px-6 py-3 rounded-lg transition font-semibold"
+                    >
+                      <FileOutput className="w-5 h-5" />
+                      Open Sample Report
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              {/* Scan Modes Section */}
+              <section id="scan-modes" className="doc-section">
                 <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
                   <Terminal className="w-8 h-8 text-primary" /> Commands
                 </h2>
@@ -260,7 +601,7 @@ export default function DocsPage() {
               {/* Scan Modes Section */}
               <section id="scan-modes" className="doc-section">
                 <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                  <Search className="w-8 h-8 text-primary" /> Scan Modes
+                  <Search className="w-8 h-8 text-primary" /> Understanding Scan Modes
                 </h2>
                 
                 <div className="space-y-6">
@@ -518,7 +859,7 @@ export default function DocsPage() {
               {/* Examples Section */}
               <section id="examples" className="doc-section">
                 <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                  <Lightbulb className="w-8 h-8 text-primary" /> Usage Examples
+                  <Lightbulb className="w-8 h-8 text-primary" /> Real World Examples
                 </h2>
                 
                 <div className="space-y-6">
