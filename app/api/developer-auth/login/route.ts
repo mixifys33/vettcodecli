@@ -5,9 +5,11 @@ import jwt from 'jsonwebtoken';
 
 // Generate JWT Token
 const generateToken = (id: string) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024', {
-    expiresIn: process.env.JWT_EXPIRE || '30d',
-  });
+  return jwt.sign(
+    { id }, 
+    process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024',
+    { expiresIn: process.env.JWT_EXPIRE || '30d' } as jwt.SignOptions
+  );
 };
 
 export async function POST(request: NextRequest) {
