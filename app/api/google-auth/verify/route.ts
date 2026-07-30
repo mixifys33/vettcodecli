@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OAuth2Client } from 'google-auth-library';
 import connectDB from '@/lib/mongodb';
-import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
+import VettcodeDeveloper, { IVettcodeDeveloper } from '@/backend/models/VettcodeDeveloper';
 import jwt from 'jsonwebtoken';
 
 // Initialize Google OAuth client

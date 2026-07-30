@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
+import VettcodeDeveloper, { IVettcodeDeveloper } from '@/backend/models/VettcodeDeveloper';
 import jwt from 'jsonwebtoken';
 
 // Generate JWT Token

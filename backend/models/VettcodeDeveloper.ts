@@ -1,7 +1,46 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose, { Document, Schema, Model } from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-const vettcodeDeveloperSchema = new mongoose.Schema(
+// Interface for the developer document
+export interface IVettcodeDeveloper extends Document {
+  name: string;
+  email: string;
+  password: string;
+  role: 'developer' | 'admin';
+  isActive: boolean;
+  isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+  lastLogin?: Date;
+  loginCount: number;
+  profile: {
+    avatar?: string;
+    bio?: string;
+    website?: string;
+    github?: string;
+    linkedin?: string;
+  };
+  subscription: {
+    plan: 'free' | 'pro' | 'enterprise';
+    startDate?: Date;
+    endDate?: Date;
+    status: 'active' | 'inactive' | 'cancelled' | 'expired';
+  };
+  scanStats: {
+    totalScans: number;
+    lastScanDate?: Date;
+    vulnerabilitiesFound: number;
+  };
+  apiKey?: string;
+  comparePassword(candidatePassword: string): Promise<boolean>;
+  updateLoginStats(): Promise<void>;
+  generateApiKey(): string;
+  getPublicProfile(): any;
+}
+
+const vettcodeDeveloperSchema = new Schema<IVettcodeDeveloper>(
   {
     name: {
       type: String,
@@ -25,7 +64,7 @@ const vettcodeDeveloperSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please provide a password'],
       minlength: [6, 'Password must be at least 6 characters long'],
-      select: false, // Don't return password by default
+      select: false,
     },
     role: {
       type: String,
@@ -121,7 +160,7 @@ const vettcodeDeveloperSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -133,21 +172,21 @@ vettcodeDeveloperSchema.index({ createdAt: -1 });
 
 // Hash password before saving
 vettcodeDeveloperSchema.pre('save', async function (next) {
-  // Only hash if password is modified
   if (!this.isModified('password')) return next();
 
   try {
-    // Generate salt and hash password
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error) {
+  } catch (error: any) {
     next(error);
   }
 });
 
 // Method to check if password is correct
-vettcodeDeveloperSchema.methods.comparePassword = async function (candidatePassword) {
+vettcodeDeveloperSchema.methods.comparePassword = async function (
+  candidatePassword: string
+): Promise<boolean> {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
   } catch (error) {
@@ -156,14 +195,14 @@ vettcodeDeveloperSchema.methods.comparePassword = async function (candidatePassw
 };
 
 // Method to generate API key
-vettcodeDeveloperSchema.methods.generateApiKey = function () {
+vettcodeDeveloperSchema.methods.generateApiKey = function (): string {
   const crypto = require('crypto');
   this.apiKey = `vettcode_${crypto.randomBytes(32).toString('hex')}`;
   return this.apiKey;
 };
 
 // Method to update login stats
-vettcodeDeveloperSchema.methods.updateLoginStats = async function () {
+vettcodeDeveloperSchema.methods.updateLoginStats = async function (): Promise<void> {
   this.lastLogin = new Date();
   this.loginCount += 1;
   await this.save({ validateBeforeSave: false });
@@ -191,6 +230,8 @@ vettcodeDeveloperSchema.methods.getPublicProfile = function () {
   };
 };
 
-const VettcodeDeveloper = mongoose.model('VettcodeDeveloper', vettcodeDeveloperSchema);
+const VettcodeDeveloper: Model<IVettcodeDeveloper> =
+  mongoose.models.VettcodeDeveloper ||
+  mongoose.model<IVettcodeDeveloper>('VettcodeDeveloper', vettcodeDeveloperSchema);
 
-module.exports = VettcodeDeveloper;
+export default VettcodeDeveloper;
