@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function ShareableReports() {
   const [copied, setCopied] = useState(false);
 
-  const exampleUrl = "https://mixifys33.github.io/vettcode-cli/reports/abc123";
+  const exampleUrl = "https://vettcodecli.vercel.app/reports/report_1785403535357_6z9r8dp6w";
 
   const copyLink = () => {
     navigator.clipboard.writeText(exampleUrl);

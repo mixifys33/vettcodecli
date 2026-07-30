@@ -26,9 +26,18 @@ export default function LiveReportPreview() {
                   <div className="text-sm text-gray-500">Grade: C</div>
                 </div>
               </div>
-              <button className="px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg text-primary hover:bg-primary/20 transition">
-                Open Full Sample Report →
-              </button>
+              <button
+                onClick={() =>
+                    window.open(
+                      "https://vettcodecli.vercel.app/reports/report_1785403535357_6z9r8dp6w",
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                  }
+                  className="px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg text-primary hover:bg-primary/20 transition"
+                  >
+                  Open Full Sample Report →
+                  </button>
             </div>
           </div>
 

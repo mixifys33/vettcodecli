@@ -526,7 +526,7 @@ export default function DocsPage() {
                       Not sure what to expect? Check out this example report:
                     </p>
                     <a 
-                      href="https://vettcode.com/report/samplereport" 
+                      href="https://vettcodecli.vercel.app/reports/report_1785403535357_6z9r8dp6w" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 bg-primary hover:bg-secondary text-white px-6 py-3 rounded-lg transition font-semibold"
