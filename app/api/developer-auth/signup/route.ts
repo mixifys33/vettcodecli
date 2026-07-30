@@ -79,8 +79,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error('Signup Error:', error);
-
     // Handle duplicate key error
     if (error.code === 11000) {
       return NextResponse.json(

@@ -23,8 +23,6 @@ export default function LoginPage() {
     const loadingToast = toast.loading('Signing in...');
 
     try {
-      console.log('Attempting login to:', getApiUrl(API_CONFIG.ENDPOINTS.LOGIN));
-      
       const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGIN), {
         method: "POST",
         headers: {
@@ -33,9 +31,7 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log('Login response status:', response.status);
       const data = await response.json();
-      console.log('Login response data:', data);
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
@@ -54,7 +50,6 @@ export default function LoginPage() {
         window.location.href = "/dashboard";
       }, 500);
     } catch (err: any) {
-      console.error('Login error:', err);
       const errorMessage = err.message || "An error occurred during login";
       setError(errorMessage);
       toast.error(errorMessage, { id: loadingToast });

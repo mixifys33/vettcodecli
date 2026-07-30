@@ -107,8 +107,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error('Google Auth Error:', error);
-
     if (error.message && error.message.includes('Token used too late')) {
       return NextResponse.json(
         { success: false, message: 'Google token has expired. Please try signing in again.' },
