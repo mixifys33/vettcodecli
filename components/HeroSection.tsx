@@ -165,6 +165,15 @@ export default function HeroSection() {
                 className="px-8 py-4 border border-primary/30 text-primary rounded-lg font-semibold hover:bg-primary/10 transition"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+               
+                onClick={() =>
+              window.open(
+                "https://vettcodecli.vercel.app/reports/report_1785403535357_6z9r8dp6w",
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
+                
               >
                 View Sample Report
               </motion.button>

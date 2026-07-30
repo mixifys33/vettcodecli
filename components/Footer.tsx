@@ -46,7 +46,7 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-2 text-gray-400 text-sm">
               <li>
-                <a href="#docs" className="hover:text-primary transition">
+                <a href="/docs" className="hover:text-primary transition">
                   Documentation
                 </a>
               </li>
@@ -105,7 +105,13 @@ export default function Footer() {
 
         {/* Credits */}
         <div className="mt-4 text-center text-xs text-gray-500">
-          Special thanks to Masereka Adorable and Hacker X
+          Special thanks to Masereka Adorable, Hacker X and{" "}
+          <a
+            href="/atai"
+            className="text-primary hover:underline transition"
+          >
+            ATAI Enterprises
+          </a>
         </div>
       </div>
     </footer>

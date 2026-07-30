@@ -68,7 +68,15 @@ export default function ShareableReports() {
             </div>
           </div>
 
-          <button className="mt-8 px-8 py-4 bg-primary hover:bg-secondary text-white rounded-lg transition font-semibold">
+          <button
+                    onClick={() =>
+              window.open(
+                "https://vettcodecli.vercel.app/reports/report_1785403535357_6z9r8dp6w",
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
+             className="mt-8 px-8 py-4 bg-primary hover:bg-secondary text-white rounded-lg transition font-semibold">
             Open Report →
           </button>
         </div>
