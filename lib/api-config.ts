@@ -1,8 +1,8 @@
 // API Configuration for VettCode Developer Authentication
 
 export const API_CONFIG = {
-  // Base API URL - change based on environment
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001',
+  // Base API URL - empty string means use same domain (works with Next.js API routes)
+  BASE_URL: '',
   
   // API Endpoints
   ENDPOINTS: {
@@ -15,6 +15,9 @@ export const API_CONFIG = {
     // Profile
     UPDATE_PROFILE: '/api/developer-auth/update-profile',
     GET_STATS: '/api/developer-auth/stats',
+    
+    // Google Auth
+    GOOGLE_VERIFY: '/api/google-auth/verify',
   },
   
   // Local Storage Keys
