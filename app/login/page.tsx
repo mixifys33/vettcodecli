@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { API_CONFIG, getApiUrl } from "@/lib/api-config";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -17,7 +19,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.LOGIN), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,14 +30,15 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Login failed");
+        throw new Error(data.message || "Login failed");
       }
 
-      // Store token and user data
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store token and developer data
+      localStorage.setItem(API_CONFIG.STORAGE_KEYS.TOKEN, data.token);
+      localStorage.setItem(API_CONFIG.STORAGE_KEYS.DEVELOPER, JSON.stringify(data.developer));
+      localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTHENTICATED, "true");
 
-      // Redirect to dashboard or home
+      // Redirect to home
       window.location.href = "/";
     } catch (err: any) {
       setError(err.message || "An error occurred during login");
@@ -179,6 +182,14 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-gray-700" />
             <span className="text-sm text-gray-500">OR</span>
             <div className="flex-1 h-px bg-gray-700" />
+          </div>
+
+          {/* Google Sign In */}
+          <div className="mt-6">
+            <GoogleSignInButton 
+              text="signin"
+              onError={(error) => setError(error)}
+            />
           </div>
 
           {/* Sign Up Link */}

@@ -21,7 +21,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             <Link href="/#features" className="text-gray-300 hover:text-primary transition">
               Features
             </Link>
@@ -34,7 +34,7 @@ export default function Navbar() {
               rel="noopener noreferrer"
               className="text-gray-300 hover:text-primary transition flex items-center gap-1"
             >
-              Vettcode web
+              Web Scanner
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
@@ -50,12 +50,22 @@ export default function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>
-            <Link
-              href="https://vettcodecli.vercel.app/reports/report_1785403535357_6z9r8dp6w"
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold"
-            >
-              Try Sample Report
-            </Link>
+            
+            {/* Auth Buttons */}
+            <div className="flex items-center gap-3 ml-2 pl-2 border-l border-gray-700">
+              <Link
+                href="/login"
+                className="text-gray-300 hover:text-primary transition font-medium"
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold"
+              >
+                Sign Up
+              </Link>
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -99,12 +109,22 @@ export default function Navbar() {
               >
                 GitHub ↗
               </a>
-              <Link
-                href="/#reports"
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold text-center"
-              >
-                Try Sample Report
-              </Link>
+              
+              {/* Mobile Auth Buttons */}
+              <div className="pt-4 border-t border-gray-700 flex flex-col gap-3">
+                <Link
+                  href="/login"
+                  className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary/10 transition font-semibold text-center"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold text-center"
+                >
+                  Sign Up
+                </Link>
+              </div>
             </div>
           </div>
         )}
