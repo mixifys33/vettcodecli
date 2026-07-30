@@ -22,10 +22,10 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-gray-300 hover:text-primary transition">
+            <Link href="/#features" className="text-gray-300 hover:text-primary transition">
               Features
             </Link>
-            <Link href="#docs" className="text-gray-300 hover:text-primary transition">
+            <Link href="/docs" className="text-gray-300 hover:text-primary transition">
               Docs
             </Link>
             <a
@@ -40,7 +40,7 @@ export default function Navbar() {
               </svg>
             </a>
             <Link
-              href="#reports"
+              href="/#reports"
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold"
             >
               Try Sample Report
@@ -66,10 +66,10 @@ export default function Navbar() {
         {isOpen && (
           <div className="md:hidden py-4 border-t border-gray-800">
             <div className="flex flex-col gap-4">
-              <Link href="#features" className="text-gray-300 hover:text-primary transition">
+              <Link href="/#features" className="text-gray-300 hover:text-primary transition">
                 Features
               </Link>
-              <Link href="#docs" className="text-gray-300 hover:text-primary transition">
+              <Link href="/docs" className="text-gray-300 hover:text-primary transition">
                 Docs
               </Link>
               <a
@@ -81,7 +81,7 @@ export default function Navbar() {
                 GitHub
               </a>
               <Link
-                href="#reports"
+                href="/#reports"
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold text-center"
               >
                 Try Sample Report
