@@ -82,8 +82,8 @@ export default function GoogleSignInButton({
       if (onSuccess) {
         onSuccess(data);
       } else {
-        // Default: redirect to home
-        window.location.href = "/";
+        // Default: redirect to dashboard
+        window.location.href = "/dashboard";
       }
     } catch (err: any) {
       const errorMessage = err.message || "An error occurred with Google sign-in";

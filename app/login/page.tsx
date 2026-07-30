@@ -38,8 +38,8 @@ export default function LoginPage() {
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.DEVELOPER, JSON.stringify(data.developer));
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTHENTICATED, "true");
 
-      // Redirect to home
-      window.location.href = "/";
+      // Redirect to dashboard
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "An error occurred during login");
     } finally {

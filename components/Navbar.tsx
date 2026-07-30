@@ -1,10 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { isAuthenticated, getDeveloper, logout } from "@/lib/api-config";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [developer, setDeveloper] = useState<any>(null);
+
+  useEffect(() => {
+    // Check authentication status
+    setIsLoggedIn(isAuthenticated());
+    if (isAuthenticated()) {
+      setDeveloper(getDeveloper());
+    }
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setIsLoggedIn(false);
+    setDeveloper(null);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-darker/80 backdrop-blur-lg border-b border-gray-800">
@@ -51,21 +68,48 @@ export default function Navbar() {
               </svg>
             </a>
             
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-3 ml-2 pl-2 border-l border-gray-700">
-              <Link
-                href="/login"
-                className="text-gray-300 hover:text-primary transition font-medium"
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold"
-              >
-                Sign Up
-              </Link>
-            </div>
+            {/* Auth Buttons or User Menu */}
+            {isLoggedIn && developer ? (
+              <div className="flex items-center gap-3 ml-2 pl-2 border-l border-gray-700">
+                <div className="flex items-center gap-2">
+                  {developer.profile?.avatar ? (
+                    <img 
+                      src={developer.profile.avatar} 
+                      alt={developer.name}
+                      className="w-8 h-8 rounded-full border border-primary/30"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
+                      <span className="text-primary font-semibold text-sm">
+                        {developer.name?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <span className="text-gray-300 font-medium">{developer.name}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-gray-300 hover:text-primary transition font-medium"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 ml-2 pl-2 border-l border-gray-700">
+                <Link
+                  href="/login"
+                  className="text-gray-300 hover:text-primary transition font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -110,21 +154,51 @@ export default function Navbar() {
                 GitHub ↗
               </a>
               
-              {/* Mobile Auth Buttons */}
-              <div className="pt-4 border-t border-gray-700 flex flex-col gap-3">
-                <Link
-                  href="/login"
-                  className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary/10 transition font-semibold text-center"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold text-center"
-                >
-                  Sign Up
-                </Link>
-              </div>
+              {/* Mobile Auth Buttons or User Info */}
+              {isLoggedIn && developer ? (
+                <div className="pt-4 border-t border-gray-700 flex flex-col gap-3">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 rounded-lg">
+                    {developer.profile?.avatar ? (
+                      <img 
+                        src={developer.profile.avatar} 
+                        alt={developer.name}
+                        className="w-10 h-10 rounded-full border border-primary/30"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
+                        <span className="text-primary font-semibold">
+                          {developer.name?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-white font-semibold">{developer.name}</p>
+                      <p className="text-gray-400 text-sm">{developer.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="px-6 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-500/10 transition font-semibold text-center"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-4 border-t border-gray-700 flex flex-col gap-3">
+                  <Link
+                    href="/login"
+                    className="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary/10 transition font-semibold text-center"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition font-semibold text-center"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
