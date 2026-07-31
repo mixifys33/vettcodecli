@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import ReportViewer from "@/components/ReportViewer";
+import HierarchicalReportViewer from "@/components/HierarchicalReportViewer";
 import AIAssistant from "@/components/AIAssistant";
 
 interface Report {
@@ -163,7 +163,7 @@ export default function ReportPage() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Report Content */}
           <div className={showAI ? "lg:col-span-2" : "lg:col-span-3"}>
-            <ReportViewer report={report} />
+            <HierarchicalReportViewer report={report} />
           </div>
 
           {/* AI Assistant Sidebar */}
