@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OAuth2Client } from 'google-auth-library';
 import connectDB from '@/lib/mongodb';
-import VettcodeDeveloper, { IVettcodeDeveloper } from '@/backend/models/VettcodeDeveloper';
-import jwt from 'jsonwebtoken';
+import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
+import { generateToken } from '@/lib/jwt';
+
+export const dynamic = 'force-dynamic';
 
 // Initialize Google OAuth client
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// Generate JWT Token
-const generateToken = (id: string) => {
-  return jwt.sign(
-    { id }, 
-    process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024',
-    { expiresIn: process.env.JWT_EXPIRE || '30d' } as jwt.SignOptions
-  );
-};
 
 export async function POST(request: NextRequest) {
   try {

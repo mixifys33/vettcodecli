@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '@/lib/jwt';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,10 +21,7 @@ export async function GET(request: NextRequest) {
 
     let decoded: { id: string };
     try {
-      decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024'
-      ) as { id: string };
+      decoded = verifyToken(token);
     } catch {
       return NextResponse.json(
         { success: false, message: 'Invalid or expired token' },
