@@ -6,6 +6,7 @@ import { isAuthenticated, getDeveloper, logout, API_CONFIG, getApiUrl } from "@/
 import Link from "next/link";
 import { motion } from "framer-motion";
 import toast, { Toaster } from 'react-hot-toast';
+import DashboardLayout from "@/components/DashboardLayout";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -187,33 +188,18 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pt-24 px-4 pb-12">
+    <DashboardLayout developer={developer}>
       <Toaster position="top-center" />
-      
-      {/* Background decorations */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
+          className="mb-8"
         >
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Profile Settings</h1>
-            <p className="text-gray-400">Manage your account settings and preferences</p>
-          </div>
-          <Link
-            href="/dashboard"
-            className="px-4 py-2 border border-primary/30 text-primary rounded-lg hover:bg-primary/10 transition flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Dashboard
-          </Link>
+          <h1 className="text-4xl font-bold mb-2">Profile Settings</h1>
+          <p className="text-gray-400">Manage your account settings and preferences</p>
         </motion.div>
 
         {/* Profile Card */}
@@ -574,18 +560,9 @@ export default function ProfilePage() {
             </svg>
             Danger Zone
           </h2>
-          <p className="text-gray-400 mb-4">Once you logout, you'll need to login again to access your account.</p>
-          <button
-            onClick={handleLogout}
-            className="px-6 py-3 bg-red-600/20 text-red-400 border border-red-600/50 rounded-lg font-semibold hover:bg-red-600/30 transition flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Logout
-          </button>
+          <p className="text-gray-400 mb-4">These actions are irreversible. Please proceed with caution.</p>
         </motion.div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isAuthenticated, getDeveloper, logout } from "@/lib/api-config";
-import Link from "next/link";
+import { isAuthenticated, getDeveloper } from "@/lib/api-config";
+import DashboardLayout from "@/components/DashboardLayout";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,11 +23,6 @@ export default function DashboardPage() {
     setLoading(false);
   }, [router]);
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex items-center justify-center">
@@ -40,51 +35,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pt-24 px-4">
+    <DashboardLayout developer={developer}>
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+        {/* Welcome Section */}
         <div className="bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-2xl border border-primary/20 p-8 mb-8">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              {developer?.profile?.avatar ? (
-                <img
-                  src={developer.profile.avatar}
-                  alt={developer.name}
-                  className="w-20 h-20 rounded-full border-2 border-primary/30"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center">
-                  <span className="text-primary font-bold text-3xl">
-                    {developer?.name?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-              <div>
-                <h1 className="text-3xl font-bold mb-1">Welcome, {developer?.name}!</h1>
-                <p className="text-gray-400">{developer?.email}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    developer?.subscription?.plan === 'pro' ? 'bg-primary/20 text-primary border border-primary/30' :
-                    developer?.subscription?.plan === 'enterprise' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
-                    'bg-gray-700/50 text-gray-400 border border-gray-600'
-                  }`}>
-                    {developer?.subscription?.plan?.toUpperCase() || 'FREE'}
-                  </span>
-                  {developer?.isEmailVerified && (
-                    <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs font-semibold">
-                      ✓ Verified
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/10 transition"
-            >
-              Logout
-            </button>
-          </div>
+          <h1 className="text-3xl font-bold mb-2">Welcome back, {developer?.name}!</h1>
+          <p className="text-gray-400">Here's your security dashboard overview</p>
         </div>
 
         {/* Stats Grid */}
@@ -99,6 +55,11 @@ export default function DashboardPage() {
               <h3 className="font-semibold text-gray-400">Total Scans</h3>
             </div>
             <p className="text-3xl font-bold text-white">{developer?.scanStats?.totalScans || 0}</p>
+            {developer?.scanStats?.lastScanDate && (
+              <p className="text-xs text-gray-500 mt-1">
+                Last scan: {new Date(developer.scanStats.lastScanDate).toLocaleDateString()}
+              </p>
+            )}
           </div>
 
           <div className="bg-gradient-to-br from-red-500/5 to-transparent rounded-xl border border-red-500/20 p-6">
@@ -111,6 +72,7 @@ export default function DashboardPage() {
               <h3 className="font-semibold text-gray-400">Vulnerabilities</h3>
             </div>
             <p className="text-3xl font-bold text-white">{developer?.scanStats?.vulnerabilitiesFound || 0}</p>
+            <p className="text-xs text-gray-500 mt-1">Found across all scans</p>
           </div>
 
           <div className="bg-gradient-to-br from-blue-500/5 to-transparent rounded-xl border border-blue-500/20 p-6">
@@ -123,75 +85,59 @@ export default function DashboardPage() {
               <h3 className="font-semibold text-gray-400">Login Count</h3>
             </div>
             <p className="text-3xl font-bold text-white">{developer?.loginCount || 0}</p>
+            {developer?.lastLogin && (
+              <p className="text-xs text-gray-500 mt-1">
+                Last login: {new Date(developer.lastLogin).toLocaleDateString()}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Getting Started */}
         <div className="bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-2xl border border-primary/20 p-8">
-          <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Link
-              href="/profile"
-              className="flex items-center gap-4 p-4 bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition group"
-            >
-              <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition">
-                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+          <h2 className="text-2xl font-bold mb-4">Getting Started with VettCode CLI</h2>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <span className="text-primary font-bold">1</span>
               </div>
               <div>
-                <h3 className="font-semibold text-white">Edit Profile</h3>
-                <p className="text-sm text-gray-400">Manage your account settings</p>
+                <h3 className="font-semibold mb-1">Install VettCode CLI</h3>
+                <p className="text-gray-400 text-sm mb-2">Install the CLI tool using npm</p>
+                <code className="block bg-gray-900 text-gray-300 px-4 py-2 rounded-lg text-sm">
+                  npm install -g vettcode-cli
+                </code>
               </div>
-            </Link>
+            </div>
 
-            <Link
-              href="/"
-              className="flex items-center gap-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition group"
-            >
-              <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition">
-                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <span className="text-primary font-bold">2</span>
               </div>
               <div>
-                <h3 className="font-semibold text-white">Go to Home</h3>
-                <p className="text-sm text-gray-400">Back to landing page</p>
+                <h3 className="font-semibold mb-1">Authenticate</h3>
+                <p className="text-gray-400 text-sm mb-2">Login to your account</p>
+                <code className="block bg-gray-900 text-gray-300 px-4 py-2 rounded-lg text-sm">
+                  vettcode login
+                </code>
               </div>
-            </Link>
+            </div>
 
-            <Link
-              href="/docs"
-              className="flex items-center gap-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 transition group"
-            >
-              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition">
-                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                <span className="text-primary font-bold">3</span>
               </div>
               <div>
-                <h3 className="font-semibold text-white">Documentation</h3>
-                <p className="text-sm text-gray-400">Learn how to use VettCode</p>
+                <h3 className="font-semibold mb-1">Run Your First Scan</h3>
+                <p className="text-gray-400 text-sm mb-2">Scan your project directory</p>
+                <code className="block bg-gray-900 text-gray-300 px-4 py-2 rounded-lg text-sm">
+                  vettcode scan /path/to/your/project
+                </code>
               </div>
-            </Link>
-
-            <Link
-              href="/reports"
-              className="flex items-center gap-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg hover:bg-green-500/20 transition group"
-            >
-              <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition">
-                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">View Reports</h3>
-                <p className="text-sm text-gray-400">Check your scan reports</p>
-              </div>
-            </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
