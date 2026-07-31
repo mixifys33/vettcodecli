@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDatabase from '@/backend/config/database';
 import DeviceAuth from '@/backend/models/DeviceAuth';
+import '@/backend/models/VettcodeDeveloper'; // register model for populate()
 
 export const dynamic = 'force-dynamic';
 
