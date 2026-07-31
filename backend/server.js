@@ -22,6 +22,10 @@ const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
   : ['http://localhost:3000'];
 
+// Add CLI origins (for device auth)
+allowedOrigins.push('http://localhost');
+allowedOrigins.push('*'); // Allow CLI requests
+
 console.log('Allowed CORS origins:', allowedOrigins);
 
 app.use(
@@ -65,6 +69,8 @@ if (process.env.NODE_ENV === 'development') {
 // Routes
 app.use('/api/developer-auth', require('./routes/developerAuth'));
 app.use('/api/google-auth', require('./routes/googleAuth'));
+app.use('/api/device-auth', require('./routes/deviceAuth'));
+app.use('/api/device-auth', require('./routes/deviceAuth'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
