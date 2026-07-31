@@ -54,10 +54,7 @@ const reportSchema = new Schema<IReport>(
       type: String,
       required: true,
     },
-    findings: {
-      type: Array,
-      default: [],
-    },
+    findings: [Schema.Types.Mixed],
     totalFindings: {
       type: Number,
       default: 0,
