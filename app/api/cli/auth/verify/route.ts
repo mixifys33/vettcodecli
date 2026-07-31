@@ -7,7 +7,7 @@ import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
 // Generate JWT Token with proper type safety
 const generateToken = (id: string): string => {
   const secret: Secret = (process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024') as Secret;
-  const expiresIn = (process.env.JWT_EXPIRE || '30d') as string;
+  const expiresIn: SignOptions['expiresIn'] = process.env.JWT_EXPIRE || '30d';
   
   const options: SignOptions = {
     expiresIn,
