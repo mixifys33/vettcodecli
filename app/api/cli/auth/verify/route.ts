@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import connectDatabase from '@/backend/config/database';
 import DeviceAuth from '@/backend/models/DeviceAuth';
 import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
 
 // Generate JWT Token
 const generateToken = (id: string): string => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024', {
-    expiresIn: process.env.JWT_EXPIRE || '30d',
-  });
+  const secret: Secret = process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024';
+  return jwt.sign(
+    { id }, 
+    secret,
+    {
+      expiresIn: process.env.JWT_EXPIRE || '30d',
+    }
+  );
 };
 
 export async function POST(request: NextRequest) {
@@ -35,10 +40,8 @@ export async function POST(request: NextRequest) {
     // Verify developer token
     let developerId: string;
     try {
-      const decoded = jwt.verify(
-        developer_token,
-        process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024'
-      ) as { id: string };
+      const secret: Secret = process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024';
+      const decoded = jwt.verify(developer_token, secret) as { id: string };
       developerId = decoded.id;
     } catch (error) {
       return NextResponse.json({
