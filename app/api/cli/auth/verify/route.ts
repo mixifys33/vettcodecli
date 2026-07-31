@@ -4,6 +4,8 @@ import connectDatabase from '@/backend/config/database';
 import DeviceAuth from '@/backend/models/DeviceAuth';
 import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
 
+export const dynamic = 'force-dynamic';
+
 // Generate JWT Token with proper type safety
 const generateToken = (id: string): string => {
   const secret: Secret = (process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024') as Secret;
