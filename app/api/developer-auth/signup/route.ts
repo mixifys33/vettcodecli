@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb';
 import VettcodeDeveloper, { IVettcodeDeveloper } from '@/backend/models/VettcodeDeveloper';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic';
+
 // Generate JWT Token
 const generateToken = (id: string) => {
   return jwt.sign(
