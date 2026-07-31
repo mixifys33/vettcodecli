@@ -77,12 +77,12 @@ const deviceAuthSchema = new Schema<IDeviceAuth>(
 );
 
 // Generate random device code (long, secure)
-deviceAuthSchema.statics.generateDeviceCode = function (): string {
+deviceAuthSchema.statics.generateDeviceCode = function (this: IDeviceAuthModel): string {
   return crypto.randomBytes(32).toString('hex'); // 64 chars
 };
 
 // Generate user-friendly user code (short, easy to type)
-deviceAuthSchema.statics.generateUserCode = function (): string {
+deviceAuthSchema.statics.generateUserCode = function (this: IDeviceAuthModel): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding similar chars
   let code = '';
   for (let i = 0; i < 6; i++) {
@@ -93,7 +93,7 @@ deviceAuthSchema.statics.generateUserCode = function (): string {
 };
 
 // Create new device auth session
-deviceAuthSchema.statics.createSession = async function (): Promise<IDeviceAuth> {
+deviceAuthSchema.statics.createSession = async function (this: IDeviceAuthModel): Promise<IDeviceAuth> {
   const deviceCode = this.generateDeviceCode();
   const userCode = this.generateUserCode();
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
@@ -108,7 +108,7 @@ deviceAuthSchema.statics.createSession = async function (): Promise<IDeviceAuth>
 };
 
 // Cleanup expired sessions (call this periodically)
-deviceAuthSchema.statics.cleanupExpired = async function () {
+deviceAuthSchema.statics.cleanupExpired = async function (this: IDeviceAuthModel) {
   const result = await this.updateMany(
     {
       status: 'pending',
