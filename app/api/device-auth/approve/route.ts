@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import connectDatabase from '@/backend/config/database';
 import DeviceAuth from '@/backend/models/DeviceAuth';
 import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
 
 // Generate JWT Token
 const generateToken = (id: string): string => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024', {
+  const secret = process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024';
+  const options: SignOptions = {
     expiresIn: process.env.JWT_EXPIRE || '30d',
-  });
+  };
+  return jwt.sign({ id }, secret, options);
 };
 
 export async function POST(req: NextRequest) {
