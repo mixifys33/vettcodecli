@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt, { Secret } from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import connectDatabase from '@/backend/config/database';
 import DeviceAuth from '@/backend/models/DeviceAuth';
 import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
@@ -7,13 +7,10 @@ import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
 // Generate JWT Token
 const generateToken = (id: string): string => {
   const secret: Secret = process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024';
-  return jwt.sign(
-    { id }, 
-    secret,
-    {
-      expiresIn: process.env.JWT_EXPIRE || '30d',
-    }
-  );
+  const options: SignOptions = {
+    expiresIn: process.env.JWT_EXPIRE || '30d',
+  };
+  return jwt.sign({ id }, secret, options);
 };
 
 export async function POST(request: NextRequest) {
