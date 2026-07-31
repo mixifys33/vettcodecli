@@ -2,11 +2,37 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
+  const router = useRouter();
   const [stage, setStage] = useState(0);
   const [progress, setProgress] = useState(0);
   const [loopCount, setLoopCount] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('vettcode_token');
+      const developer = localStorage.getItem('vettcode_developer');
+      
+      if (token && developer) {
+        try {
+          const devData = JSON.parse(developer);
+          setIsAuthenticated(true);
+          setUserName(devData.name || devData.email);
+        } catch (e) {
+          setIsAuthenticated(false);
+        }
+      } else {
+        setIsAuthenticated(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   // 7 fast stages - 10 second total loop
   const scanStages = [
@@ -113,7 +139,7 @@ export default function HeroSection() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              AI-POWERED CODE ANALYSIS
+              {isAuthenticated ? `WELCOME BACK, ${userName.toUpperCase().split(' ')[0]}` : 'AI-POWERED CODE ANALYSIS'}
             </motion.div>
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
@@ -151,38 +177,67 @@ export default function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 }}
             >
-              <motion.button 
-                className="px-8 py-4 bg-primary text-white rounded-lg font-semibold hover:bg-secondary transition flex items-center gap-2 glow-green"
-                whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(16, 185, 129, 0.5)" }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  const installSection = document.getElementById('install');
-                  if (installSection) {
-                    installSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Install CLI
-              </motion.button>
-              <motion.button 
-                className="px-8 py-4 border border-primary/30 text-primary rounded-lg font-semibold hover:bg-primary/10 transition"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-               
-                onClick={() =>
-              window.open(
-                "https://vettcodecli.vercel.app/reports/report_1785403535357_6z9r8dp6w",
-                "_blank",
-                "noopener,noreferrer"
-              )
-            }
-                
-              >
-                View Sample Report
-              </motion.button>
+              {isAuthenticated ? (
+                <>
+                  <motion.button 
+                    className="px-8 py-4 bg-primary text-white rounded-lg font-semibold hover:bg-secondary transition flex items-center gap-2 glow-green"
+                    whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(16, 185, 129, 0.5)" }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => router.push('/dashboard')}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Go to Dashboard
+                  </motion.button>
+                  <motion.button 
+                    className="px-8 py-4 border border-primary/30 text-primary rounded-lg font-semibold hover:bg-primary/10 transition"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      const installSection = document.getElementById('install');
+                      if (installSection) {
+                        installSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
+                  >
+                    Install CLI
+                  </motion.button>
+                </>
+              ) : (
+                <>
+                  <motion.button 
+                    className="px-8 py-4 bg-primary text-white rounded-lg font-semibold hover:bg-secondary transition flex items-center gap-2 glow-green"
+                    whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(16, 185, 129, 0.5)" }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      const installSection = document.getElementById('install');
+                      if (installSection) {
+                        installSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Install CLI
+                  </motion.button>
+                  <motion.button 
+                    className="px-8 py-4 border border-primary/30 text-primary rounded-lg font-semibold hover:bg-primary/10 transition"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() =>
+                      window.open(
+                        "https://vettcodecli.vercel.app/reports/report_1785403535357_6z9r8dp6w",
+                        "_blank",
+                        "noopener,noreferrer"
+                      )
+                    }
+                  >
+                    View Sample Report
+                  </motion.button>
+                </>
+              )}
             </motion.div>
 
             {/* Features badges */}

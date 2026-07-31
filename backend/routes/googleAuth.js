@@ -8,6 +8,15 @@ const router = express.Router();
 // Initialize Google OAuth client (only needs Client ID for token verification)
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+// Handle OPTIONS preflight requests explicitly
+router.options('/verify', (req, res) => {
+  res.status(200).end();
+});
+
+router.options('/config', (req, res) => {
+  res.status(200).end();
+});
+
 // Generate JWT Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024', {
