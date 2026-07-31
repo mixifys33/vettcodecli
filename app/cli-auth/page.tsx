@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { API_CONFIG, getApiUrl } from "@/lib/api-config";
 import toast, { Toaster } from 'react-hot-toast';
 
-export default function CLIAuthPage() {
+function CLIAuthContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [userCode, setUserCode] = useState("");
@@ -342,5 +342,20 @@ export default function CLIAuthPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function CLIAuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CLIAuthContent />
+    </Suspense>
   );
 }

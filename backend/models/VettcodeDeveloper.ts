@@ -166,8 +166,7 @@ const vettcodeDeveloperSchema = new Schema<IVettcodeDeveloper>(
   }
 );
 
-// Index for faster queries
-vettcodeDeveloperSchema.index({ email: 1 });
+// Index for faster queries - removed duplicate email index
 vettcodeDeveloperSchema.index({ createdAt: -1 });
 
 // Hash password before saving
