@@ -24,7 +24,7 @@ interface IDeviceAuthModel extends Model<IDeviceAuth> {
   cleanupExpired(): Promise<any>;
 }
 
-const deviceAuthSchema = new Schema<IDeviceAuth>(
+const deviceAuthSchema = new Schema<IDeviceAuth, IDeviceAuthModel>(
   {
     deviceCode: {
       type: String,
@@ -76,13 +76,13 @@ const deviceAuthSchema = new Schema<IDeviceAuth>(
   }
 );
 
-// Generate random device code (long, secure)
-deviceAuthSchema.statics.generateDeviceCode = function (this: IDeviceAuthModel): string {
+// Static method: Generate random device code (long, secure)
+deviceAuthSchema.static('generateDeviceCode', function (): string {
   return crypto.randomBytes(32).toString('hex'); // 64 chars
-};
+});
 
-// Generate user-friendly user code (short, easy to type)
-deviceAuthSchema.statics.generateUserCode = function (this: IDeviceAuthModel): string {
+// Static method: Generate user-friendly user code (short, easy to type)
+deviceAuthSchema.static('generateUserCode', function (): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding similar chars
   let code = '';
   for (let i = 0; i < 6; i++) {
@@ -90,25 +90,26 @@ deviceAuthSchema.statics.generateUserCode = function (this: IDeviceAuthModel): s
     code += chars[Math.floor(Math.random() * chars.length)];
   }
   return code;
-};
+});
 
-// Create new device auth session
-deviceAuthSchema.statics.createSession = async function (this: IDeviceAuthModel): Promise<IDeviceAuth> {
-  const deviceCode = this.generateDeviceCode();
-  const userCode = this.generateUserCode();
+// Static method: Create new device auth session
+deviceAuthSchema.static('createSession', async function (): Promise<IDeviceAuth> {
+  const DeviceAuthModel = this as IDeviceAuthModel;
+  const deviceCode = DeviceAuthModel.generateDeviceCode();
+  const userCode = DeviceAuthModel.generateUserCode();
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-  const session = await this.create({
+  const session = await DeviceAuthModel.create({
     deviceCode,
     userCode,
     expiresAt,
   });
 
   return session;
-};
+});
 
-// Cleanup expired sessions (call this periodically)
-deviceAuthSchema.statics.cleanupExpired = async function (this: IDeviceAuthModel) {
+// Static method: Cleanup expired sessions (call this periodically)
+deviceAuthSchema.static('cleanupExpired', async function () {
   const result = await this.updateMany(
     {
       status: 'pending',
@@ -119,9 +120,9 @@ deviceAuthSchema.statics.cleanupExpired = async function (this: IDeviceAuthModel
     }
   );
   return result;
-};
+});
 
-// Auto-expire on query
+// Pre-hook: Auto-expire on query
 deviceAuthSchema.pre('findOne', async function () {
   const query = this.getQuery();
   if (query.status === 'pending') {
