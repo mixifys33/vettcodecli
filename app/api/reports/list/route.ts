@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 
     // Format reports for frontend
     const formattedReports = reports.map((report: any) => ({
-      id: report._id.toString(),
+      id: report.reportId, // Use reportId instead of _id
       projectName: report.projectName,
       score: report.score,
       grade: report.grade,
