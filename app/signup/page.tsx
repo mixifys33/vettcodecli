@@ -57,9 +57,9 @@ function SignupContent() {
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.DEVELOPER, JSON.stringify(data.developer));
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTHENTICATED, "true");
 
-      // Check for redirect parameter
+      // Check for redirect parameter and decode it
       const redirect = searchParams.get('redirect');
-      const redirectUrl = redirect || '/dashboard';
+      const redirectUrl = redirect ? decodeURIComponent(redirect) : '/dashboard';
 
       // Redirect
       window.location.href = redirectUrl;

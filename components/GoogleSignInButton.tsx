@@ -86,7 +86,7 @@ export default function GoogleSignInButton({
       if (onSuccess) {
         onSuccess(data);
       } else {
-        // Use redirect URL if provided, otherwise go to dashboard
+        // Use redirect URL if provided (already includes the code parameter), otherwise go to dashboard
         const finalRedirect = redirectUrl || '/dashboard';
         setTimeout(() => {
           window.location.href = finalRedirect;

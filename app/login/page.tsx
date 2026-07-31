@@ -47,9 +47,9 @@ function LoginContent() {
       // Success toast
       toast.success('Login successful! Redirecting...', { id: loadingToast });
 
-      // Check for redirect parameter
+      // Check for redirect parameter and decode it
       const redirect = searchParams.get('redirect');
-      const redirectUrl = redirect || '/dashboard';
+      const redirectUrl = redirect ? decodeURIComponent(redirect) : '/dashboard';
 
       // Wait a moment before redirect
       setTimeout(() => {
