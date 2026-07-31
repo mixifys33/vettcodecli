@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { API_CONFIG, getApiUrl } from "@/lib/api-config";
@@ -8,6 +9,7 @@ import GoogleSignInButton from "@/components/GoogleSignInButton";
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,9 +47,13 @@ export default function LoginPage() {
       // Success toast
       toast.success('Login successful! Redirecting...', { id: loadingToast });
 
+      // Check for redirect parameter
+      const redirect = searchParams.get('redirect');
+      const redirectUrl = redirect || '/dashboard';
+
       // Wait a moment before redirect
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        window.location.href = redirectUrl;
       }, 500);
     } catch (err: any) {
       const errorMessage = err.message || "An error occurred during login";

@@ -13,12 +13,14 @@ interface GoogleSignInButtonProps {
   onSuccess?: (data: any) => void;
   onError?: (error: string) => void;
   text?: "signin" | "signup";
+  redirectUrl?: string;
 }
 
 export default function GoogleSignInButton({ 
   onSuccess, 
   onError,
-  text = "signin" 
+  text = "signin",
+  redirectUrl
 }: GoogleSignInButtonProps) {
   const [loading, setLoading] = useState(false);
 
@@ -84,9 +86,10 @@ export default function GoogleSignInButton({
       if (onSuccess) {
         onSuccess(data);
       } else {
-        // Default: redirect to dashboard
+        // Use redirect URL if provided, otherwise go to dashboard
+        const finalRedirect = redirectUrl || '/dashboard';
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          window.location.href = finalRedirect;
         }, 500);
       }
     } catch (err: any) {

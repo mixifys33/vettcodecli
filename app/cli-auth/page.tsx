@@ -293,6 +293,7 @@ function CLIAuthContent() {
               {/* Google Sign In */}
               <GoogleSignInButton 
                 text="signin"
+                redirectUrl={`/cli-auth${userCode ? `?code=${userCode}` : ''}`}
                 onError={(error) => toast.error(error)}
               />
 

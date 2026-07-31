@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { API_CONFIG, getApiUrl } from "@/lib/api-config";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function SignupPage() {
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -55,8 +57,12 @@ export default function SignupPage() {
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.DEVELOPER, JSON.stringify(data.developer));
       localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTHENTICATED, "true");
 
-      // Redirect to dashboard
-      window.location.href = "/dashboard";
+      // Check for redirect parameter
+      const redirect = searchParams.get('redirect');
+      const redirectUrl = redirect || '/dashboard';
+
+      // Redirect
+      window.location.href = redirectUrl;
     } catch (err: any) {
       setError(err.message || "An error occurred during signup");
     } finally {
