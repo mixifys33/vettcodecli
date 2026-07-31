@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/backend/config/database';
 import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
+import Report from '@/backend/models/Report';
 
 interface JwtPayload {
   id: string;
@@ -50,62 +51,38 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Mock data for now - In production, this would fetch from a Reports collection
-    // For demonstration purposes, we'll return sample reports based on scan stats
-    const mockReports = [];
-    
-    // Generate mock reports based on scanStats
-    const totalScans = developer.scanStats?.totalScans || 0;
-    const vulnerabilitiesFound = developer.scanStats?.vulnerabilitiesFound || 0;
-    
-    if (totalScans > 0) {
-      // Create sample reports
-      for (let i = 0; i < Math.min(totalScans, 10); i++) {
-        const criticalCount = Math.floor(Math.random() * 3);
-        const highCount = Math.floor(Math.random() * 5);
-        const mediumCount = Math.floor(Math.random() * 8);
-        const lowCount = Math.floor(Math.random() * 10);
-        const totalFindings = criticalCount + highCount + mediumCount + lowCount;
-        
-        // Calculate score based on findings
-        let score = 100;
-        score -= criticalCount * 20;
-        score -= highCount * 10;
-        score -= mediumCount * 5;
-        score -= lowCount * 2;
-        score = Math.max(0, Math.min(100, score));
-        
-        // Determine grade
-        let grade = 'F';
-        if (score >= 90) grade = 'A';
-        else if (score >= 80) grade = 'B';
-        else if (score >= 70) grade = 'C';
-        else if (score >= 60) grade = 'D';
-        
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        
-        mockReports.push({
-          id: `report-${developer._id}-${i}`,
-          projectName: `Project ${i + 1}`,
-          score: score,
-          grade: grade,
-          summary: `Security scan found ${totalFindings} issue${totalFindings !== 1 ? 's' : ''} across multiple categories.`,
-          totalFindings: totalFindings,
-          criticalFindings: criticalCount,
-          highFindings: highCount,
-          mediumFindings: mediumCount,
-          lowFindings: lowCount,
-          createdAt: date.toISOString(),
-          expiresAt: new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        });
-      }
-    }
+    // Fetch reports from database
+    const reports = await Report.find({
+      developerId: authResult.developer.id,
+      expiresAt: { $gt: new Date() }, // Only get non-expired reports
+    })
+      .sort({ createdAt: -1 }) // Newest first
+      .limit(100) // Limit to 100 most recent reports
+      .select('-findings') // Exclude findings array for performance
+      .lean();
+
+    // Format reports for frontend
+    const formattedReports = reports.map((report: any) => ({
+      id: report._id.toString(),
+      projectName: report.projectName,
+      score: report.score,
+      grade: report.grade,
+      summary: report.summary,
+      totalFindings: report.totalFindings,
+      criticalFindings: report.criticalFindings,
+      highFindings: report.highFindings,
+      mediumFindings: report.mediumFindings,
+      lowFindings: report.lowFindings,
+      infoFindings: report.infoFindings,
+      createdAt: report.createdAt,
+      expiresAt: report.expiresAt,
+      reportUrl: report.reportUrl,
+    }));
 
     return NextResponse.json({
       success: true,
-      reports: mockReports,
-      count: mockReports.length,
+      reports: formattedReports,
+      count: formattedReports.length,
     });
   } catch (error: any) {
     console.error('List reports error:', error);
