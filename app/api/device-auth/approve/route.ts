@@ -7,10 +7,8 @@ import VettcodeDeveloper from '@/backend/models/VettcodeDeveloper';
 // Generate JWT Token
 const generateToken = (id: string): string => {
   const secret = process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024';
-  const options: SignOptions = {
-    expiresIn: process.env.JWT_EXPIRE || '30d',
-  };
-  return jwt.sign({ id }, secret, options);
+  const expiresIn = process.env.JWT_EXPIRE || '30d';
+  return jwt.sign({ id }, secret, { expiresIn } as SignOptions);
 };
 
 export async function POST(req: NextRequest) {
