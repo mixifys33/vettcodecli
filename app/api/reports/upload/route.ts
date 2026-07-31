@@ -118,8 +118,8 @@ export async function POST(request: NextRequest) {
 
     // Save report to database
     const report = await Report.create({
-      _id: reportId, // Use the reportId as the MongoDB _id
       developerId: authResult.developer.id,
+      reportId, // Store the external report ID
       projectName,
       score: reportData.score || 0,
       grade: reportData.grade || 'F',

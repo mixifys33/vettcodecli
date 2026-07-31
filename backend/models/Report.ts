@@ -2,6 +2,7 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export interface IReport extends Document {
   developerId: mongoose.Types.ObjectId;
+  reportId: string; // External report ID for ImageKit
   projectName: string;
   score: number;
   grade: string;
@@ -32,6 +33,12 @@ const reportSchema = new Schema<IReport>(
       type: Schema.Types.ObjectId,
       ref: 'VettcodeDeveloper',
       required: true,
+      index: true,
+    },
+    reportId: {
+      type: String,
+      required: true,
+      unique: true,
       index: true,
     },
     projectName: {
