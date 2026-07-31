@@ -18,20 +18,36 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    console.log(`[CLI Auth Status] Looking for device_code: ${device_code}`);
+
     // Cleanup expired sessions
-    await DeviceAuth.cleanupExpired();
+    try {
+      await DeviceAuth.cleanupExpired();
+    } catch (cleanupError: any) {
+      console.error('[CLI Auth Status] Cleanup error:', cleanupError?.message);
+      // Continue even if cleanup fails
+    }
 
     // Find session
-    const session = await DeviceAuth.findOne({ deviceCode: device_code })
-      .populate('developerId', 'name email profile subscription');
+    let session;
+    try {
+      session = await DeviceAuth.findOne({ deviceCode: device_code })
+        .populate('developerId', 'name email profile subscription');
+    } catch (findError: any) {
+      console.error('[CLI Auth Status] Find error:', findError?.message);
+      throw findError;
+    }
 
     if (!session) {
+      console.log(`[CLI Auth Status] Session not found for device_code: ${device_code}`);
       return NextResponse.json({
         success: false,
         status: 'not_found',
         message: 'Invalid device code',
       }, { status: 404 });
     }
+
+    console.log(`[CLI Auth Status] Found session with status: ${session.status}`);
 
     // Check status
     if (session.status === 'expired') {
@@ -83,6 +99,7 @@ export async function GET(request: NextRequest) {
     }, { status: 400 });
   } catch (error: any) {
     console.error('[CLI Auth Status] Error:', error?.message || error);
+    console.error('[CLI Auth Status] Full error:', error);
     
     // Check for connection errors
     if (error?.message?.includes('connect ECONNREFUSED') || error?.message?.includes('getaddrinfo')) {

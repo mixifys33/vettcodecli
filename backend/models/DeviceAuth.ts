@@ -122,22 +122,8 @@ deviceAuthSchema.static('cleanupExpired', async function () {
   return result;
 });
 
-// Pre-hook: Auto-expire on query
-deviceAuthSchema.pre('findOne', async function () {
-  const query = this.getQuery();
-  if (query.status === 'pending') {
-    // Check expiration
-    await mongoose.model('DeviceAuth').updateMany(
-      {
-        status: 'pending',
-        expiresAt: { $lt: new Date() },
-      },
-      {
-        status: 'expired',
-      }
-    );
-  }
-});
+// Pre-hook: Auto-expire on query (REMOVED - causes issues with findOne)
+// Cleanup is handled by cleanupExpired() method instead
 
 // Index for automatic cleanup (MongoDB TTL index)
 deviceAuthSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 600 }); // Auto-delete after 10 mins
