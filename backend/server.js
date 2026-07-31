@@ -65,6 +65,7 @@ if (process.env.NODE_ENV === 'development') {
 // Routes
 app.use('/api/developer-auth', require('./routes/developerAuth'));
 app.use('/api/google-auth', require('./routes/googleAuth'));
+app.use('/api/cli/auth', require('./routes/cliAuth'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
