@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { API_CONFIG, getApiUrl } from "@/lib/api-config";
 import toast, { Toaster } from 'react-hot-toast';
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 function CLIAuthContent() {
   const searchParams = useSearchParams();
@@ -100,6 +101,11 @@ function CLIAuthContent() {
   };
 
   const handleReject = async () => {
+    if (!userCode || userCode.length < 6) {
+      toast.error("Please enter a valid code");
+      return;
+    }
+
     const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.TOKEN);
     if (!token) {
       toast.error("Please login first");
@@ -107,8 +113,10 @@ function CLIAuthContent() {
     }
 
     setLoading(true);
+    const loadingToast = toast.loading('Rejecting device...');
+
     try {
-      await fetch(getApiUrl("/api/device-auth/reject"), {
+      const response = await fetch(getApiUrl("/api/device-auth/reject"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,10 +125,21 @@ function CLIAuthContent() {
         body: JSON.stringify({ userCode: userCode.toUpperCase() }),
       });
 
-      toast.success("Device authorization rejected");
-      router.push("/dashboard");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to reject device");
+      }
+
+      toast.success("Device authorization rejected", { id: loadingToast });
+      
+      // Show rejection message
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1500);
     } catch (err: any) {
-      toast.error("Failed to reject device");
+      const errorMessage = err.message || "Failed to reject device";
+      toast.error(errorMessage, { id: loadingToast });
     } finally {
       setLoading(false);
     }
@@ -208,7 +227,7 @@ function CLIAuthContent() {
               }}
               placeholder="ABC-123"
               maxLength={7}
-              className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition text-center text-2xl font-mono tracking-wider"
+              className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition text-center text-2xl font-mono tracking-wider placeholder-gray-500"
               disabled={verifying}
             />
             {verifying && (
@@ -261,8 +280,29 @@ function CLIAuthContent() {
                     d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                   />
                 </svg>
-                Login to Authorize
+                Login with Email
               </Link>
+
+              {/* Divider */}
+              <div className="flex items-center gap-4">
+                <div className="flex-1 h-px bg-gray-700" />
+                <span className="text-sm text-gray-500">OR</span>
+                <div className="flex-1 h-px bg-gray-700" />
+              </div>
+
+              {/* Google Sign In */}
+              <GoogleSignInButton 
+                text="signin"
+                onError={(error) => toast.error(error)}
+              />
+
+              {/* Divider */}
+              <div className="flex items-center gap-4 mt-4">
+                <div className="flex-1 h-px bg-gray-700" />
+                <span className="text-sm text-gray-500">OR</span>
+                <div className="flex-1 h-px bg-gray-700" />
+              </div>
+
               <Link
                 href={`/signup?redirect=/cli-auth${userCode ? `?code=${userCode}` : ''}`}
                 className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition flex items-center justify-center gap-2"

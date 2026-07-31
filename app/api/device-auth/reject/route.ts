@@ -1,10 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 import connectDatabase from '@/backend/config/database';
 import DeviceAuth from '@/backend/models/DeviceAuth';
 
 export async function POST(req: NextRequest) {
   try {
     await connectDatabase();
+
+    // Check authorization
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Not authorized',
+        },
+        { status: 401 }
+      );
+    }
+
+    // Verify token
+    try {
+      jwt.verify(token, process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024');
+    } catch (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid token',
+        },
+        { status: 401 }
+      );
+    }
 
     const { userCode } = await req.json();
 
