@@ -33,11 +33,21 @@ export async function POST(request: NextRequest) {
       interval: 5, // Poll every 5 seconds
     });
   } catch (error: any) {
-    console.error('[CLI Auth Start] Error:', error);
+    console.error('[CLI Auth Start] Error:', error?.message || error);
+    
+    // Check for connection errors
+    if (error?.message?.includes('connect ECONNREFUSED') || error?.message?.includes('getaddrinfo')) {
+      return NextResponse.json({
+        success: false,
+        message: 'Database connection failed. Please check MongoDB configuration.',
+        error: error?.message || 'Unknown database error',
+      }, { status: 503 });
+    }
+
     return NextResponse.json({
       success: false,
       message: 'Failed to start authentication session',
-      error: error.message,
+      error: error?.message || 'Unknown error',
     }, { status: 500 });
   }
 }
