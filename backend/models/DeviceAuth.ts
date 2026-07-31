@@ -125,8 +125,8 @@ deviceAuthSchema.static('cleanupExpired', async function () {
 // Pre-hook: Auto-expire on query (REMOVED - causes issues with findOne)
 // Cleanup is handled by cleanupExpired() method instead
 
-// Index for automatic cleanup (MongoDB TTL index)
-deviceAuthSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 600 }); // Auto-delete after 10 mins
+// Index for automatic cleanup (MongoDB TTL index) - removed duplicate declaration
+// TTL index is declared inline in the schema above
 
 const DeviceAuth: IDeviceAuthModel =
   (mongoose.models.DeviceAuth as IDeviceAuthModel) ||

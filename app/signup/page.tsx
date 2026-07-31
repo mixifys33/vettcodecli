@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { API_CONFIG, getApiUrl } from "@/lib/api-config";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 
-export default function SignupPage() {
+function SignupContent() {
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     name: "",
@@ -352,5 +352,21 @@ export default function SignupPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SignupContent />
+    </Suspense>
   );
 }
