@@ -131,11 +131,26 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <Link
-              href="/"
+              href="/profile"
               className="flex items-center gap-4 p-4 bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition group"
             >
               <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition">
                 <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">Edit Profile</h3>
+                <p className="text-sm text-gray-400">Manage your account settings</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/"
+              className="flex items-center gap-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition group"
+            >
+              <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition">
+                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
               </div>
@@ -157,6 +172,21 @@ export default function DashboardPage() {
               <div>
                 <h3 className="font-semibold text-white">Documentation</h3>
                 <p className="text-sm text-gray-400">Learn how to use VettCode</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/reports"
+              className="flex items-center gap-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg hover:bg-green-500/20 transition group"
+            >
+              <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition">
+                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">View Reports</h3>
+                <p className="text-sm text-gray-400">Check your scan reports</p>
               </div>
             </Link>
           </div>
