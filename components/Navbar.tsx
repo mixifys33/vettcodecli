@@ -45,6 +45,11 @@ export default function Navbar() {
             <Link href="/docs" className="text-gray-300 hover:text-primary transition">
               Docs
             </Link>
+            {isLoggedIn && (
+              <Link href="/dashboard" className="text-gray-300 hover:text-primary transition font-medium">
+                Dashboard
+              </Link>
+            )}
             <a
               href="https://vetted-xi.vercel.app/"
               target="_blank"
@@ -137,6 +142,11 @@ export default function Navbar() {
               <Link href="/docs" className="text-gray-300 hover:text-primary transition">
                 Docs
               </Link>
+              {isLoggedIn && (
+                <Link href="/dashboard" className="text-gray-300 hover:text-primary transition font-medium">
+                  Dashboard
+                </Link>
+              )}
               <a
                 href="https://vetted-xi.vercel.app/"
                 target="_blank"
