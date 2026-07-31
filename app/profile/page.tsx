@@ -284,7 +284,7 @@ export default function ProfilePage() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                   placeholder="Your full name"
                 />
               </div>
@@ -298,7 +298,7 @@ export default function ProfilePage() {
                   onChange={handleInputChange}
                   rows={4}
                   maxLength={500}
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition resize-none"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition resize-none placeholder-gray-500"
                   placeholder="Tell us about yourself..."
                 />
                 <p className="text-xs text-gray-500 mt-1">{formData.bio.length}/500 characters</p>
@@ -312,7 +312,7 @@ export default function ProfilePage() {
                   name="website"
                   value={formData.website}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                   placeholder="https://yourwebsite.com"
                 />
               </div>
@@ -325,7 +325,7 @@ export default function ProfilePage() {
                   name="github"
                   value={formData.github}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                   placeholder="yourusername"
                 />
               </div>
@@ -338,7 +338,7 @@ export default function ProfilePage() {
                   name="linkedin"
                   value={formData.linkedin}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                   placeholder="https://linkedin.com/in/yourusername"
                 />
               </div>
@@ -476,7 +476,7 @@ export default function ProfilePage() {
                   name="currentPassword"
                   value={passwordForm.currentPassword}
                   onChange={handlePasswordChange}
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                   placeholder="Enter current password"
                 />
               </div>
@@ -488,7 +488,7 @@ export default function ProfilePage() {
                   name="newPassword"
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                   placeholder="Enter new password"
                 />
                 {passwordForm.newPassword && (
@@ -519,7 +519,7 @@ export default function ProfilePage() {
                   name="confirmPassword"
                   value={passwordForm.confirmPassword}
                   onChange={handlePasswordChange}
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                   placeholder="Confirm new password"
                 />
               </div>

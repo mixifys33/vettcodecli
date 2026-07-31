@@ -148,7 +148,7 @@ function SignupContent() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                 placeholder="John Doe"
               />
             </div>
@@ -165,7 +165,7 @@ function SignupContent() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition"
+                className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition placeholder-gray-500"
                 placeholder="you@example.com"
               />
             </div>
@@ -183,7 +183,7 @@ function SignupContent() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition pr-12"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition pr-12 placeholder-gray-500"
                   placeholder="••••••••"
                 />
                 <button
@@ -246,7 +246,7 @@ function SignupContent() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-background border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition pr-12"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-primary transition pr-12 placeholder-gray-500"
                   placeholder="••••••••"
                 />
                 <button
