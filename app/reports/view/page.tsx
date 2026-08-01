@@ -273,11 +273,6 @@ function ReportViewerContent() {
           onSearchChange={setSearchQuery}
           activeSeverityFilter={activeSeverityFilter}
           onSeverityFilterChange={setActiveSeverityFilter}
-          severityCounts={severityCounts}
-          filteredFindings={filteredFindings}
-          hasActiveFilters={hasActiveFilters}
-          onSeverityClick={handleSeverityClick}
-          onClearFilters={clearFilters}
           onAskAI={handleAskAI}
         />
       </div>
