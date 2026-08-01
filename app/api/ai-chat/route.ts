@@ -193,7 +193,7 @@ ${blueprintContext}
 ${topIssues || "None"}
 
 **Executive Summary:**
-${report.executiveVerdict || "No summary available"}`;
+${(report as any).executiveVerdict || "No summary available"}`;
 }
 
 export async function POST(req: NextRequest) {
