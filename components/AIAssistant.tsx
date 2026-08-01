@@ -18,7 +18,11 @@ import {
   ChevronRight,
   X,
   Send,
-  ChevronDown
+  ChevronDown,
+  Sparkles,
+  Cpu,
+  Code2,
+  CircleDot
 } from "lucide-react";
 
 interface AIAssistantProps {
@@ -133,13 +137,8 @@ export default function AIAssistant({ report, onClose, initialMessage, context }
   const [input, setInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedModel, setSelectedModel] = useState<"auto" | "flash" | "deep" | "code" | "core">("auto");
+  const [hasAutoSent, setHasAutoSent] = useState(false);
 
-  // Use initialMessage if provided
-  useEffect(() => {
-    if (initialMessage && input === "") {
-      setInput(initialMessage);
-    }
-  }, [initialMessage, input]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -213,6 +212,15 @@ Ask about vulnerabilities or select an action below.`;
     initialMessage: welcomeMessage,
     selectedModel,
   });
+
+  // Auto-send initial message if provided (for "Ask AI" button clicks)
+  useEffect(() => {
+    if (initialMessage && !hasAutoSent && messages.length <= 1 && !loading) {
+      // Automatically send the initial question
+      sendMessage(initialMessage);
+      setHasAutoSent(true);
+    }
+  }, [initialMessage, hasAutoSent, messages.length, loading, sendMessage]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -402,26 +410,33 @@ Ask about vulnerabilities or select an action below.`;
 
       {/* Premium Input Area */}
       <div className="border-t border-gray-800 p-4 flex-shrink-0 bg-[#0f1419]">
-        <div className="flex items-center gap-3 bg-[#111827] border border-gray-700 rounded-xl p-2 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
+        <div className="flex items-stretch gap-3 bg-[#111827] border border-gray-700 rounded-xl p-2 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
           {/* AtAI Model Selector */}
           <div className="relative flex-shrink-0">
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value as any)}
-              className="appearance-none bg-[#1F2937] text-sm text-gray-200 font-medium px-3 py-2 pr-10 rounded-lg border border-gray-600 hover:border-gray-500 focus:outline-none focus:border-purple-500 cursor-pointer transition"
+              className="appearance-none bg-[#1F2937] text-sm text-gray-200 font-medium pl-3 pr-9 py-2 rounded-lg border border-gray-600 hover:border-gray-500 focus:outline-none focus:border-purple-500 cursor-pointer transition h-full"
               disabled={loading}
               title={modelDescriptions[selectedModel]}
             >
               <option value="auto">AtAI Auto</option>
-              <option value="flash">⚡ AtAI Flash</option>
-              <option value="deep">🧠 AtAI Deep</option>
-              <option value="code">🎯 AtAI Code</option>
-              <option value="core">💡 AtAI Core</option>
+              <option value="flash">AtAI Flash</option>
+              <option value="deep">AtAI Deep</option>
+              <option value="code">AtAI Code</option>
+              <option value="core">AtAI Core</option>
             </select>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center gap-1">
+              {selectedModel === "flash" && <Zap className="w-3 h-3 text-yellow-400" />}
+              {selectedModel === "deep" && <Brain className="w-3 h-3 text-purple-400" />}
+              {selectedModel === "code" && <Code2 className="w-3 h-3 text-blue-400" />}
+              {selectedModel === "core" && <CircleDot className="w-3 h-3 text-green-400" />}
+              {selectedModel === "auto" && <Sparkles className="w-3 h-3 text-gray-400" />}
+              <ChevronDown className="w-3 h-3 text-gray-400" />
+            </div>
           </div>
 
-          {/* Input Field */}
+          {/* Input Field - Responsive */}
           <input
             ref={inputRef}
             type="text"
@@ -429,7 +444,7 @@ Ask about vulnerabilities or select an action below.`;
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={getPlaceholder()}
-            className="flex-1 bg-transparent text-[#E5E7EB] text-sm placeholder-[#6B7280] focus:outline-none px-2"
+            className="flex-1 min-w-0 bg-transparent text-[#E5E7EB] text-sm placeholder-[#6B7280] focus:outline-none px-2"
             disabled={loading}
             maxLength={500}
           />
@@ -438,7 +453,7 @@ Ask about vulnerabilities or select an action below.`;
           <motion.button
             onClick={handleSend}
             disabled={!input.trim() || loading}
-            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2 flex-shrink-0 shadow-lg shadow-purple-500/20"
+            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2 flex-shrink-0 shadow-lg shadow-purple-500/20 whitespace-nowrap"
             whileHover={{ scale: input.trim() && !loading ? 1.02 : 1 }}
             whileTap={{ scale: input.trim() && !loading ? 0.98 : 1 }}
             aria-label="Analyze"
@@ -458,11 +473,11 @@ Ask about vulnerabilities or select an action below.`;
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                <span>Analyzing...</span>
+                <span className="hidden sm:inline">Analyzing...</span>
               </>
             ) : (
               <>
-                <span>Analyze</span>
+                <span className="hidden sm:inline">Analyze</span>
                 <Send className="w-4 h-4" />
               </>
             )}
@@ -471,8 +486,8 @@ Ask about vulnerabilities or select an action below.`;
         
         {/* Subtle hint + character count */}
         <div className="text-xs text-gray-500 mt-2 flex items-center justify-between px-1">
-          <span className="text-gray-600">{modelDescriptions[selectedModel]}</span>
-          <span>{input.length}/500</span>
+          <span className="text-gray-600 truncate">{modelDescriptions[selectedModel]}</span>
+          <span className="flex-shrink-0 ml-2">{input.length}/500</span>
         </div>
       </div>
     </div>
