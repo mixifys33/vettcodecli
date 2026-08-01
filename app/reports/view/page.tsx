@@ -9,6 +9,7 @@ import ResizablePanel from "@/components/ResizablePanel";
 import { useReportFilters } from "@/hooks/useReportFilters";
 import { saveLocalReport } from "@/lib/localReportStorage";
 import { toast } from "sonner";
+import { decode } from "js-base64";
 
 /**
  * External Report Viewer
@@ -95,8 +96,8 @@ function ReportViewerContent() {
         return;
       }
 
-      // Decode base64 report data
-      const decodedData = atob(reportData);
+      // Decode base64 report data (Unicode-safe with js-base64)
+      const decodedData = decode(reportData);
       const parsedReport = JSON.parse(decodedData);
 
       // Validate report structure
