@@ -71,7 +71,7 @@ export default function ResizablePanel({
   return (
     <motion.div
       ref={panelRef}
-      className="fixed top-0 right-0 h-screen bg-darker border-l border-gray-800 z-40 flex shadow-2xl"
+      className="fixed top-0 right-0 h-screen bg-darker border-l border-gray-800 z-50 flex shadow-2xl"
       style={{ width: isMinimized ? "60px" : `${width}px` }}
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
