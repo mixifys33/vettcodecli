@@ -324,43 +324,43 @@ Ask about vulnerabilities or select an action below.`;
 
   return (
     <div className="flex flex-col h-full bg-dark">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 p-4 flex-shrink-0">
+      {/* Compact Header */}
+      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 px-4 py-2.5 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5 text-purple-400" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Brain className="w-4 h-4 text-purple-400" />
             </div>
-            <div>
-              <h3 className="font-semibold">Report Copilot</h3>
-              <p className="text-xs text-gray-400">Intelligent analysis assistant</p>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-sm leading-tight">Report Copilot</h3>
+              <p className="text-[10px] text-gray-400 leading-tight">Intelligent analysis</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {loading && (
               <button
                 onClick={cancelRequest}
-                className="text-xs px-3 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition flex items-center gap-1.5"
+                className="text-xs px-2.5 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-md hover:bg-red-500/30 transition flex items-center gap-1"
               >
                 <X className="w-3 h-3" />
-                <span>Stop</span>
+                <span className="hidden sm:inline">Stop</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Context Indicator */}
+        {/* Compact Context Indicator */}
         {context?.section && (
-          <div className="flex items-center gap-2 text-xs bg-blue-500/10 border border-blue-500/30 rounded px-3 py-1.5 mt-3">
-            <MapPin className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-blue-300 font-medium">
-              {context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}
+          <div className="flex items-center gap-1.5 text-[11px] bg-blue-500/10 border border-blue-500/30 rounded px-2 py-1 mt-2">
+            <MapPin className="w-3 h-3 text-blue-400 flex-shrink-0" />
+            <span className="text-blue-300 font-medium truncate">
+              {context.section === "architecture" ? "Architecture" : context.section === "risk-surface" ? "Risk Surface" : "Report"}
             </span>
             {context.focusItem?.data?.file && (
               <>
-                <ChevronRight className="w-3 h-3 text-gray-500" />
-                <FileCode className="w-3 h-3 text-gray-400" />
-                <span className="text-gray-400 font-mono text-xs">
+                <ChevronRight className="w-2.5 h-2.5 text-gray-500 flex-shrink-0" />
+                <FileCode className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                <span className="text-gray-400 font-mono text-[10px] truncate">
                   {context.focusItem.data.file}
                 </span>
               </>
@@ -408,35 +408,35 @@ Ask about vulnerabilities or select an action below.`;
         </div>
       )}
 
-      {/* Premium Input Area */}
-      <div className="border-t border-gray-800 p-4 flex-shrink-0 bg-[#0f1419]">
-        <div className="flex items-stretch gap-3 bg-[#111827] border border-gray-700 rounded-xl p-2 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
-          {/* AtAI Model Selector */}
+      {/* Compact Input Area */}
+      <div className="border-t border-gray-800 px-3 py-2.5 flex-shrink-0 bg-[#0f1419]">
+        <div className="flex items-stretch gap-2 bg-[#111827] border border-gray-700 rounded-lg p-1.5 focus-within:border-purple-500/50 focus-within:ring-1 focus-within:ring-purple-500/20 transition-all">
+          {/* Compact Model Selector */}
           <div className="relative flex-shrink-0">
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value as any)}
-              className="appearance-none bg-[#1F2937] text-sm text-gray-200 font-medium pl-3 pr-9 py-2 rounded-lg border border-gray-600 hover:border-gray-500 focus:outline-none focus:border-purple-500 cursor-pointer transition h-full"
+              className="appearance-none bg-[#1F2937] text-xs text-gray-200 font-medium pl-2 pr-7 py-1.5 rounded border border-gray-600 hover:border-gray-500 focus:outline-none focus:border-purple-500 cursor-pointer transition h-full"
               disabled={loading}
               title={modelDescriptions[selectedModel]}
             >
-              <option value="auto">AtAI Auto</option>
-              <option value="flash">AtAI Flash</option>
-              <option value="deep">AtAI Deep</option>
-              <option value="code">AtAI Code</option>
-              <option value="core">AtAI Core</option>
+              <option value="auto">Auto</option>
+              <option value="flash">Flash</option>
+              <option value="deep">Deep</option>
+              <option value="code">Code</option>
+              <option value="core">Core</option>
             </select>
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center gap-1">
-              {selectedModel === "flash" && <Zap className="w-3 h-3 text-yellow-400" />}
-              {selectedModel === "deep" && <Brain className="w-3 h-3 text-purple-400" />}
-              {selectedModel === "code" && <Code2 className="w-3 h-3 text-blue-400" />}
-              {selectedModel === "core" && <CircleDot className="w-3 h-3 text-green-400" />}
-              {selectedModel === "auto" && <Sparkles className="w-3 h-3 text-gray-400" />}
-              <ChevronDown className="w-3 h-3 text-gray-400" />
+            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center gap-0.5">
+              {selectedModel === "flash" && <Zap className="w-2.5 h-2.5 text-yellow-400" />}
+              {selectedModel === "deep" && <Brain className="w-2.5 h-2.5 text-purple-400" />}
+              {selectedModel === "code" && <Code2 className="w-2.5 h-2.5 text-blue-400" />}
+              {selectedModel === "core" && <CircleDot className="w-2.5 h-2.5 text-green-400" />}
+              {selectedModel === "auto" && <Sparkles className="w-2.5 h-2.5 text-gray-400" />}
+              <ChevronDown className="w-2.5 h-2.5 text-gray-400" />
             </div>
           </div>
 
-          {/* Input Field - Responsive */}
+          {/* Compact Input */}
           <input
             ref={inputRef}
             type="text"
@@ -444,16 +444,16 @@ Ask about vulnerabilities or select an action below.`;
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={getPlaceholder()}
-            className="flex-1 min-w-0 bg-transparent text-[#E5E7EB] text-sm placeholder-[#6B7280] focus:outline-none px-2"
+            className="flex-1 min-w-0 bg-transparent text-[#E5E7EB] text-sm placeholder-[#6B7280] focus:outline-none px-1.5"
             disabled={loading}
             maxLength={500}
           />
 
-          {/* Analyze Button */}
+          {/* Compact Analyze Button */}
           <motion.button
             onClick={handleSend}
             disabled={!input.trim() || loading}
-            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2 flex-shrink-0 shadow-lg shadow-purple-500/20 whitespace-nowrap"
+            className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded font-medium text-xs disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5 flex-shrink-0 shadow-md shadow-purple-500/20 whitespace-nowrap"
             whileHover={{ scale: input.trim() && !loading ? 1.02 : 1 }}
             whileTap={{ scale: input.trim() && !loading ? 0.98 : 1 }}
             aria-label="Analyze"
@@ -461,7 +461,7 @@ Ask about vulnerabilities or select an action below.`;
             {loading ? (
               <>
                 <svg
-                  className="w-4 h-4 animate-spin"
+                  className="w-3 h-3 animate-spin"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -473,11 +473,23 @@ Ask about vulnerabilities or select an action below.`;
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                <span className="hidden sm:inline">Analyzing...</span>
+                <span className="hidden sm:inline text-[11px]">Analyzing</span>
               </>
             ) : (
               <>
-                <span className="hidden sm:inline">Analyze</span>
+                <span className="hidden sm:inline text-[11px]">Analyze</span>
+                <Send className="w-3 h-3" />
+              </>
+            )}
+          </motion.button>
+        </div>
+        
+        {/* Compact hint */}
+        <div className="text-[10px] text-gray-500 mt-1 flex items-center justify-between px-0.5">
+          <span className="text-gray-600 truncate">{modelDescriptions[selectedModel]}</span>
+          <span className="flex-shrink-0 ml-2">{input.length}/500</span>
+        </div>
+      </div>
                 <Send className="w-4 h-4" />
               </>
             )}
