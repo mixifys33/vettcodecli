@@ -1,0 +1,172 @@
+IMAGEKIT DELETION TESTING GUIDE
+================================
+
+PROBLEM:
+Reports are deleted from MongoDB but NOT from ImageKit storage.
+Files like https://ik.imagekit.io/HackerX1234567/vettcode-reports/report_1785404066845_310w1mbe2.json still exist after deletion.
+
+SOLUTION IMPLEMENTED:
+1. Added imagekitFileId field to Report model to store ImageKit file ID
+2. Updated upload endpoint to store fileId when reports are uploaded
+3. Updated DELETE endpoint to use stored fileId for direct deletion
+4. Added fallback search method for old reports without stored fileId
+
+FILES MODIFIED:
+- backend/models/Report.ts (added imagekitFileId field)
+- app/api/reports/upload/route.ts (store imagekitFileId from ImageKit response)
+- app/api/reports/[id]/route.ts (use imagekitFileId for deletion + fallback search)
+
+TESTING STEPS:
+==============
+
+STEP 1: Test the DELETE endpoint manually
+------------------------------------------
+1. Go to https://vettcodecli.vercel.app
+2. Log in to your account
+3. Open browser DevTools (F12) > Console tab
+4. Get your JWT token:
+   localStorage.getItem('token')
+5. Copy the token (without quotes)
+
+6. Test deletion from browser console:
+
+fetch('https://vettcodecli.vercel.app/api/reports/report_1785404066845_310w1mbe2', {
+  method: 'DELETE',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN_HERE',
+    'Content-Type': 'application/json'
+  }
+})
+.then(r => r.json())
+.then(data => console.log('Delete response:', data))
+
+7. Check the response:
+   - imagekitDeleted: true = SUCCESS
+   - imagekitDeleted: false = FAILED (check imagekitError for reason)
+
+8. Verify deletion by checking if file still exists:
+
+fetch('https://ik.imagekit.io/HackerX1234567/vettcode-reports/report_1785404066845_310w1mbe2.json')
+.then(r => console.log('ImageKit status:', r.status)) // 404 = deleted, 200 = still exists
+
+STEP 2: Check Vercel logs for detailed debugging
+-------------------------------------------------
+1. Go to https://vercel.com/your-project/deployments
+2. Click on the latest deployment
+3. Click "Functions" tab
+4. Click on "api/reports/[id]" function
+5. Look for logs containing "[Report Delete]"
+
+Key things to check in logs:
+- "ImageKit instance created successfully" (credentials OK)
+- "Found matching file" (search found the file)
+- "Successfully deleted from ImageKit" (deletion worked)
+- Total files found in folder listing
+- Sample file names returned by ImageKit
+
+STEP 3: Test with NEW report (after deployment)
+------------------------------------------------
+1. Create a new report using VettCode CLI:
+   vettcode scan --ai
+
+2. This new report will have imagekitFileId stored in MongoDB
+
+3. Try deleting the new report from web UI:
+   https://vettcodecli.vercel.app/reports
+
+4. Check if deletion works (should be much faster with stored fileId)
+
+STEP 4: Check ImageKit dashboard manually
+------------------------------------------
+1. Go to https://imagekit.io/dashboard/media-library/L3ZldHRjb2RlLXJlcG9ydHM
+2. Look for the report files
+3. Check if deleted reports are actually removed from the list
+4. If files are still there after DELETE returns success, this indicates:
+   - ImageKit API is returning success but not actually deleting
+   - API key doesn't have delete permissions
+   - There's a delay in ImageKit's file system
+
+POTENTIAL ISSUES:
+=================
+
+ISSUE 1: ImageKit Private Key doesn't have delete permissions
+--------------------------------------------------------------
+Solution: Check ImageKit dashboard > Settings > API Keys
+- Ensure the private key has "Delete" permission enabled
+- May need to regenerate the key with proper permissions
+
+ISSUE 2: listFiles() returns empty results
+-------------------------------------------
+This means ImageKit API can't find the files in the search
+Possible causes:
+- Files were uploaded to a different folder path
+- API key has restricted access to certain folders
+- Files were uploaded under a different ImageKit account
+
+Solution: Check Vercel environment variables:
+- IMAGEKIT_PRIVATE_KEY (has delete permissions?)
+- NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY (matches account with files?)
+- NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT (correct endpoint?)
+
+ISSUE 3: deleteFile() succeeds but file still exists
+-----------------------------------------------------
+This is the most likely issue based on your description.
+
+The ImageKit API might be:
+- Returning 200 OK without actually deleting
+- Having a caching/CDN delay (file still accessible via URL)
+- Soft-deleting files (moved to trash instead of permanently deleted)
+
+Solution:
+- Check ImageKit dashboard for "Trash" or "Deleted Files" section
+- Try using ImageKit's purgeCache API after deletion
+- Contact ImageKit support about deletion not working
+
+ISSUE 4: File uploaded to different path
+-----------------------------------------
+Check if files are in:
+- /vettcode-reports/
+- vettcode-reports/
+- /vettcode-reports
+(Different path formats)
+
+Solution: The code now checks all path variations
+
+DEBUG COMMAND:
+==============
+Run this in browser console to see detailed deletion process:
+
+async function testDelete(reportId, token) {
+  console.log('Testing deletion for:', reportId);
+  
+  const deleteResponse = await fetch(`https://vettcodecli.vercel.app/api/reports/${reportId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  const deleteData = await deleteResponse.json();
+  console.log('Delete API response:', deleteData);
+  
+  // Wait 2 seconds for ImageKit to process
+  await new Promise(r => setTimeout(r, 2000));
+  
+  const checkResponse = await fetch(`https://ik.imagekit.io/HackerX1234567/vettcode-reports/${reportId}.json`);
+  console.log('File still exists?', checkResponse.status === 200 ? 'YES (PROBLEM!)' : 'NO (SUCCESS)');
+  
+  return { deleteData, fileExists: checkResponse.status === 200 };
+}
+
+// Usage:
+// const token = localStorage.getItem('token');
+// testDelete('report_1785404066845_310w1mbe2', token);
+
+NEXT STEPS:
+===========
+1. Deploy the changes to Vercel
+2. Test deletion using the steps above
+3. Check Vercel logs for detailed output
+4. If still failing, check ImageKit API key permissions
+5. Contact ImageKit support if API returns success but files remain

@@ -197,7 +197,7 @@ export async function DELETE(
 
     console.log('[Report Delete] Found report, deleting from ImageKit and MongoDB');
 
-    // Delete from ImageKit - try multiple approaches
+    // Delete from ImageKit
     let imagekitDeleted = false;
     let imagekitError = null;
     
@@ -205,64 +205,71 @@ export async function DELETE(
       const imagekit = getImageKitInstance();
       console.log('[Report Delete] ImageKit instance created successfully');
       
-      console.log('[Report Delete] Searching for file in ImageKit...');
-      
-      // Method 1: Search by name
-      const files = await imagekit.listFiles({
-        path: "/vettcode-reports",
-        searchQuery: `name="${reportId}.json"`,
-      });
-
-      console.log('[Report Delete] ImageKit search result:', {
-        filesFound: files?.length || 0,
-        files: files?.map((f: any) => ({ fileId: f.fileId, name: f.name, filePath: f.filePath }))
-      });
-
-      if (files && files.length > 0) {
-        console.log('[Report Delete] Attempting to delete file:', files[0].fileId);
-        const deleteResult = await imagekit.deleteFile(files[0].fileId);
-        imagekitDeleted = true;
-        console.log('[Report Delete] Successfully deleted from ImageKit:', deleteResult);
-      } else {
-        // Method 2: Try searching without path restriction
-        console.log('[Report Delete] Trying broader search without path...');
-        const allFiles = await imagekit.listFiles({
-          searchQuery: `name="${reportId}.json"`,
-        });
+      // Method 1: Use stored fileId if available (fastest and most reliable)
+      if (report.imagekitFileId) {
+        console.log('[Report Delete] Using stored ImageKit file ID:', report.imagekitFileId);
         
-        console.log('[Report Delete] Broader search result:', {
-          filesFound: allFiles?.length || 0,
-          files: allFiles?.map((f: any) => ({ fileId: f.fileId, name: f.name, filePath: f.filePath }))
-        });
-        
-        if (allFiles && allFiles.length > 0) {
-          console.log('[Report Delete] Attempting to delete file (broader search):', allFiles[0].fileId);
-          const deleteResult = await imagekit.deleteFile(allFiles[0].fileId);
+        try {
+          await imagekit.deleteFile(report.imagekitFileId);
           imagekitDeleted = true;
-          console.log('[Report Delete] Successfully deleted from ImageKit (broader search):', deleteResult);
+          console.log('[Report Delete] ✅ Successfully deleted from ImageKit using stored fileId');
+        } catch (deleteError: any) {
+          console.log('[Report Delete] Failed with stored fileId, falling back to search:', deleteError.message);
+          // Fall through to search method below
+        }
+      }
+      
+      // Method 2: Search for file if no stored fileId or Method 1 failed
+      if (!imagekitDeleted) {
+        const filePath = `/vettcode-reports/${reportId}.json`;
+        console.log('[Report Delete] Target file path:', filePath);
+        
+        console.log('[Report Delete] Listing all files in vettcode-reports folder...');
+        const folderFiles = await imagekit.listFiles({
+          path: "/vettcode-reports",
+          limit: 1000,
+        });
+        
+        console.log('[Report Delete] Folder listing result:', {
+          totalFiles: folderFiles?.length || 0,
+          searchingFor: `${reportId}.json`,
+          sampleFiles: folderFiles?.slice(0, 3).map((f: any) => ({ 
+            name: f.name, 
+            fileId: f.fileId,
+            filePath: f.filePath 
+          }))
+        });
+        
+        // Find exact match by name
+        const matchingFile = folderFiles?.find((f: any) => 
+          f.name === `${reportId}.json` || 
+          f.filePath === filePath ||
+          f.filePath === `vettcode-reports/${reportId}.json`
+        );
+        
+        if (matchingFile) {
+          console.log('[Report Delete] Found matching file:', {
+            fileId: matchingFile.fileId,
+            name: matchingFile.name,
+            filePath: matchingFile.filePath,
+          });
+          
+          console.log('[Report Delete] Deleting file with ID:', matchingFile.fileId);
+          await imagekit.deleteFile(matchingFile.fileId);
+          imagekitDeleted = true;
+          console.log('[Report Delete] ✅ Successfully deleted from ImageKit');
         } else {
-          // Method 3: Try listing all files in folder and filtering
-          console.log('[Report Delete] Trying to list all files in folder...');
-          const folderFiles = await imagekit.listFiles({
-            path: "/vettcode-reports",
-            limit: 1000,
-          });
+          console.log('[Report Delete] ❌ File not found in ImageKit listing');
+          console.log('[Report Delete] Possible reasons:');
+          console.log('  1. File was already deleted');
+          console.log('  2. File was uploaded to a different path');
+          console.log('  3. ImageKit API key has limited access');
+          console.log('  4. File is in a different folder');
           
-          console.log('[Report Delete] Folder listing result:', {
-            filesFound: folderFiles?.length || 0,
-            sampleFiles: folderFiles?.slice(0, 5).map((f: any) => ({ name: f.name, fileId: f.fileId }))
-          });
-          
-          const matchingFile = folderFiles?.find((f: any) => f.name === `${reportId}.json`);
-          
-          if (matchingFile) {
-            console.log('[Report Delete] Found matching file in folder listing:', matchingFile.fileId);
-            const deleteResult = await imagekit.deleteFile(matchingFile.fileId);
-            imagekitDeleted = true;
-            console.log('[Report Delete] Successfully deleted from ImageKit (folder listing):', deleteResult);
-          } else {
-            console.log('[Report Delete] File not found in ImageKit after all attempts');
-            console.log('[Report Delete] Searched for:', `${reportId}.json`);
+          if (folderFiles && folderFiles.length > 0) {
+            console.log('[Report Delete] Sample files found:', 
+              folderFiles.slice(0, 5).map((f: any) => f.name)
+            );
           }
         }
       }
@@ -270,9 +277,8 @@ export async function DELETE(
       imagekitError = error;
       console.error('[Report Delete] ImageKit deletion error:', {
         message: error.message,
-        stack: error.stack,
+        statusCode: error.statusCode || error.status,
         name: error.name,
-        response: error.response?.data || error.response,
         help: error.help,
       });
     }

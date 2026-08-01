@@ -120,6 +120,7 @@ export async function POST(request: NextRequest) {
     const report = await Report.create({
       developerId: authResult.developer.id,
       reportId, // Store the external report ID
+      imagekitFileId: uploadResponse.fileId, // Store ImageKit fileId for direct deletion
       projectName,
       score: reportData.score || 0,
       grade: reportData.grade || 'F',
