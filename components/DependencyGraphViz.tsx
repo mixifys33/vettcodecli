@@ -24,6 +24,7 @@ export default function DependencyGraphViz({ nodes, edges }: DependencyGraphVizP
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const nodePositionsRef = useRef<Map<string, { x: number; y: number; vx: number; vy: number }>>(new Map());
 
   // Simple force-directed graph without external library
   useEffect(() => {
@@ -37,19 +38,21 @@ export default function DependencyGraphViz({ nodes, edges }: DependencyGraphVizP
     const height = canvas.height;
 
     // Create node positions
-    const nodePositions = new Map<string, { x: number; y: number; vx: number; vy: number }>();
+    const nodePositions = nodePositionsRef.current;
     
-    // Initialize nodes in circle
-    nodes.forEach((node, i) => {
-      const angle = (i / nodes.length) * 2 * Math.PI;
-      const radius = Math.min(width, height) * 0.3;
-      nodePositions.set(node.id, {
-        x: width / 2 + radius * Math.cos(angle),
-        y: height / 2 + radius * Math.sin(angle),
-        vx: 0,
-        vy: 0,
+    // Initialize nodes in circle (only if not already initialized)
+    if (nodePositions.size === 0) {
+      nodes.forEach((node, i) => {
+        const angle = (i / nodes.length) * 2 * Math.PI;
+        const radius = Math.min(width, height) * 0.3;
+        nodePositions.set(node.id, {
+          x: width / 2 + radius * Math.cos(angle),
+          y: height / 2 + radius * Math.sin(angle),
+          vx: 0,
+          vy: 0,
+        });
       });
-    });
+    }
 
     // Animation loop
     let animationFrame: number;
@@ -167,12 +170,51 @@ export default function DependencyGraphViz({ nodes, edges }: DependencyGraphVizP
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
     // Find clicked node
-    // This would require keeping track of node positions
-    // For simplicity, we'll skip this for now
+    const nodePositions = nodePositionsRef.current;
+    let clickedNode: string | null = null;
+
+    for (const [nodeId, pos] of nodePositions.entries()) {
+      const dist = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
+      if (dist < 10) {
+        clickedNode = nodeId;
+        break;
+      }
+    }
+
+    setSelectedNode(clickedNode);
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    // Find hovered node
+    const nodePositions = nodePositionsRef.current;
+    let foundHoveredNode: string | null = null;
+
+    for (const [nodeId, pos] of nodePositions.entries()) {
+      const dist = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
+      if (dist < 10) {
+        foundHoveredNode = nodeId;
+        break;
+      }
+    }
+
+    if (foundHoveredNode !== hoveredNode) {
+      setHoveredNode(foundHoveredNode);
+    }
   };
 
   if (nodes.length === 0) {
@@ -195,7 +237,31 @@ export default function DependencyGraphViz({ nodes, edges }: DependencyGraphVizP
         height={600}
         className="w-full h-auto bg-gray-900/50 rounded-lg border border-gray-700 cursor-pointer"
         onClick={handleCanvasClick}
+        onMouseMove={handleCanvasMouseMove}
       />
+      
+      {/* Selected Node Info */}
+      {selectedNode && (
+        <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+          <div className="text-sm font-semibold text-blue-400 mb-1">Selected Node</div>
+          <div className="text-xs text-gray-300 font-mono break-all">
+            {nodes.find(n => n.id === selectedNode)?.path || selectedNode}
+          </div>
+          <div className="text-xs text-gray-400 mt-2">
+            Type: {nodes.find(n => n.id === selectedNode)?.type || "unknown"}
+          </div>
+          <div className="text-xs text-gray-400">
+            Dependencies: {edges.filter(e => e.from === selectedNode).length} outgoing, {edges.filter(e => e.to === selectedNode).length} incoming
+          </div>
+          <button
+            onClick={() => setSelectedNode(null)}
+            className="mt-2 text-xs text-blue-400 hover:text-blue-300 underline"
+          >
+            Clear selection
+          </button>
+        </div>
+      )}
+
       <div className="mt-4 flex gap-4 text-sm text-gray-400">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-gray-700 rounded-full border border-gray-500"></div>
