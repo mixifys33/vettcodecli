@@ -297,8 +297,8 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
 
     // Try multiple models in case one is unavailable
     const modelsToTry = [
+      "qwen/qwen-2.5-coder-32b-instruct:free", // Try this first - more stable
       "google/gemini-2.0-flash-exp:free",
-      "qwen/qwen-2.5-coder-32b-instruct:free",
       "meta-llama/llama-3.2-3b-instruct:free",
       "google/gemma-2-9b-it:free",
     ];
@@ -348,7 +348,18 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
 
         if (response.ok) {
           clearTimeout(timeoutId);
-          const data = await response.json();
+          
+          // Parse JSON with better error handling
+          let data;
+          try {
+            const responseText = await response.text();
+            data = JSON.parse(responseText);
+          } catch (parseError: any) {
+            console.error(`[AI Chat] Failed to parse response from ${model}:`, parseError.message);
+            lastError = { model, error: "JSON parse error", details: parseError.message };
+            continue; // Try next model
+          }
+
           const aiResponse =
             data.choices?.[0]?.message?.content ||
             "I apologize, but I couldn't generate a response. Please try rephrasing your question.";
@@ -372,7 +383,14 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
         }
 
         // If not OK, store error and try next model
-        const errorData = await response.json().catch(() => ({}));
+        let errorData;
+        try {
+          const errorText = await response.text();
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: "Could not parse error response" };
+        }
+        
         lastError = {
           status: response.status,
           model,
