@@ -18,6 +18,9 @@ import {
   Target,
 } from "lucide-react";
 
+import DependencyGraphViz from "@/components/DependencyGraphViz";
+import ProjectStructureTree from "@/components/ProjectStructureTree";
+
 interface Blueprint {
   meta: {
     totalFiles: number;
@@ -268,26 +271,51 @@ export default function ArchitecturePage() {
             subtitle="Module relationships and connections"
             icon={<Network className="w-5 h-5" />}
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                <div className="text-3xl font-bold text-blue-500 mb-2">
-                  {dependencies.nodes.length}
+            <div className="space-y-6">
+              {/* Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                  <div className="text-3xl font-bold text-blue-500 mb-2">
+                    {dependencies.nodes.length}
+                  </div>
+                  <div className="text-gray-400">Total Modules</div>
                 </div>
-                <div className="text-gray-400">Total Modules</div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                <div className="text-3xl font-bold text-green-500 mb-2">
-                  {dependencies.edges.length}
+                <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                  <div className="text-3xl font-bold text-green-500 mb-2">
+                    {dependencies.edges.length}
+                  </div>
+                  <div className="text-gray-400">Dependencies</div>
                 </div>
-                <div className="text-gray-400">Dependencies</div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                <div className="text-3xl font-bold text-purple-500 mb-2">
-                  {Math.round((dependencies.edges.length / dependencies.nodes.length) * 10) / 10}
+                <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                  <div className="text-3xl font-bold text-purple-500 mb-2">
+                    {Math.round((dependencies.edges.length / dependencies.nodes.length) * 10) / 10}
+                  </div>
+                  <div className="text-gray-400">Avg Connections per Module</div>
                 </div>
-                <div className="text-gray-400">Avg Connections per Module</div>
               </div>
+
+              {/* Visual Graph */}
+              {dependencies.edges.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-4">Interactive Dependency Graph</h3>
+                  <DependencyGraphViz 
+                    nodes={dependencies.nodes}
+                    edges={dependencies.edges}
+                  />
+                </div>
+              )}
             </div>
+          </Section>
+        )}
+
+        {/* Project Structure Tree */}
+        {blueprint.structure && (
+          <Section
+            title="Project Structure"
+            subtitle="Hierarchical file and folder organization"
+            icon={<FileCode className="w-5 h-5" />}
+          >
+            <ProjectStructureTree structure={blueprint.structure} />
           </Section>
         )}
       </div>
