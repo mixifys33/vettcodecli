@@ -8,6 +8,7 @@ import CompactReportHeader from "@/components/CompactReportHeader";
 import AIAssistant from "@/components/AIAssistant";
 import ResizablePanel from "@/components/ResizablePanel";
 import { useReportFilters } from "@/hooks/useReportFilters";
+import { getLocalReportById } from "@/lib/localReportStorage";
 
 interface Report {
   id: string;
@@ -29,6 +30,7 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
+  const [isLocalReport, setIsLocalReport] = useState(false);
   const [showAI, setShowAI] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [aiInitialMessage, setAiInitialMessage] = useState<string | undefined>(undefined);
@@ -146,7 +148,36 @@ How should I prioritize and address these ${context.severity} severity issues?`;
   useEffect(() => {
     if (!reportId) return;
 
-    // Fetch report from API
+    // Check if this is a local report (ID starts with "local_")
+    if (reportId.startsWith('local_')) {
+      try {
+        const localReport = getLocalReportById(reportId);
+        
+        if (localReport) {
+          setReport({
+            ...localReport.report,
+            id: localReport.id,
+            projectName: localReport.projectName,
+            createdAt: localReport.savedAt,
+            expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // Local reports don't expire
+          });
+          setIsLocalReport(true);
+          setLoading(false);
+          return;
+        } else {
+          setError("Local report not found");
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error("Error loading local report:", err);
+        setError("Failed to load local report");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Fetch CLI report from API
     fetch(`/api/reports/${reportId}`)
       .then(res => {
         if (!res.ok) {
@@ -160,6 +191,7 @@ How should I prioritize and address these ${context.severity} severity issues?`;
       })
       .then(data => {
         setReport(data.report);
+        setIsLocalReport(false);
         setLoading(false);
       })
       .catch(err => {

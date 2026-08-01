@@ -26,7 +26,11 @@
     "react-syntax-highlighter": "^15.5.0",
     "react-force-graph-2d": "^1.25.4",
     "d3-force": "^3.0.0",
-    "d3-scale": "^4.0.2"
+    "d3-scale": "^4.0.2",
+    "jszip": "^3.10.1",
+    "@babel/parser": "^7.26.3",
+    "@babel/traverse": "^7.26.5",
+    "dompurify": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -35,6 +39,8 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/react-syntax-highlighter": "^15.5.11",
+    "@types/babel__traverse": "^7.20.6",
+    "@types/dompurify": "^3.0.5",
     "typescript": "^5.0.0",
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.0",
