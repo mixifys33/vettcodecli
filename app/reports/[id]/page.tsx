@@ -183,7 +183,7 @@ export default function ReportPage() {
       </div>
 
       {/* Expiration Notice */}
-      <div className="fixed bottom-4 right-4 bg-dark border border-yellow-500/30 rounded-lg p-4 max-w-sm">
+      <div className="fixed bottom-2 right-2 bg-dark border border-yellow-500/30 rounded-lg p-2 max-w-sm">
         <div className="flex items-start gap-3">
           <span className="text-yellow-500">⏰</span>
           <div className="text-sm">
