@@ -339,26 +339,26 @@ Ask about vulnerabilities or select an action below.`;
   return (
     <div className="flex flex-col h-full bg-dark">
       {/* Compact Header */}
-      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 px-4 py-2.5 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 px-4 py-2.5 flex-shrink-0 pr-24">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
               <Brain className="w-4 h-4 text-purple-400" />
             </div>
-            <div className="min-w-0">
-              <h3 className="font-semibold text-sm leading-tight">Report Copilot</h3>
-              <p className="text-[10px] text-gray-400 leading-tight">Intelligent analysis</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-sm leading-tight truncate">Report Copilot</h3>
+              <p className="text-[10px] text-gray-400 leading-tight truncate">Intelligent analysis</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {/* Message counter - shows when conversation has started */}
             {messages.length > 1 && (
               <div 
-                className="text-[10px] px-2 py-1 bg-blue-500/10 border border-blue-500/30 rounded text-blue-300 flex items-center gap-1"
+                className="text-[10px] px-1.5 py-1 bg-blue-500/10 border border-blue-500/30 rounded text-blue-300 flex items-center gap-1 flex-shrink-0"
                 title={`${messages.length - 1} messages in conversation (keeping last 5 for context)`}
               >
                 <MessageSquare className="w-3 h-3" />
-                <span className="hidden sm:inline">{messages.length - 1}</span>
+                <span className="hidden md:inline text-[10px]">{messages.length - 1}</span>
               </div>
             )}
             
@@ -366,21 +366,20 @@ Ask about vulnerabilities or select an action below.`;
             {messages.length > 1 && !loading && (
               <button
                 onClick={handleClearChat}
-                className="text-xs px-2.5 py-1 bg-gray-700/50 text-gray-300 border border-gray-600 rounded-md hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition flex items-center gap-1.5"
+                className="text-xs px-2 py-1 bg-gray-700/50 text-gray-300 border border-gray-600 rounded hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition flex items-center gap-1 flex-shrink-0"
                 title="Clear conversation"
               >
                 <Trash2 className="w-3 h-3" />
-                <span className="hidden sm:inline">Clear</span>
               </button>
             )}
             
             {loading && (
               <button
                 onClick={cancelRequest}
-                className="text-xs px-2.5 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-md hover:bg-red-500/30 transition flex items-center gap-1"
+                className="text-xs px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500/30 transition flex items-center gap-1 flex-shrink-0"
+                title="Stop generating"
               >
                 <X className="w-3 h-3" />
-                <span className="hidden sm:inline">Stop</span>
               </button>
             )}
           </div>
