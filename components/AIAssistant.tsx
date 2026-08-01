@@ -323,24 +323,24 @@ Ask about vulnerabilities or select an action below.`;
   );
 
   return (
-    <div className="flex flex-col h-full bg-dark">
+    <div className="flex flex-col h-70% bg-dark">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 p-4 flex-shrink-0">
+      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 p-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5 text-purple-400" />
+            <div className="w-7 h-7 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <Brain className="w-4 h-4 text-purple-400" />
             </div>
             <div>
               <h3 className="font-semibold">Report Copilot</h3>
               <p className="text-xs text-gray-400">Intelligent analysis assistant</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {loading && (
               <button
                 onClick={cancelRequest}
-                className="text-xs px-3 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition flex items-center gap-1.5"
+                className="text-sm px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition flex items-center gap-1.5"
               >
                 <X className="w-3 h-3" />
                 <span>Stop</span>
@@ -351,15 +351,15 @@ Ask about vulnerabilities or select an action below.`;
 
         {/* Context Indicator */}
         {context?.section && (
-          <div className="flex items-center gap-2 text-xs bg-blue-500/10 border border-blue-500/30 rounded px-3 py-1.5 mt-3">
-            <MapPin className="w-3.5 h-3.5 text-blue-400" />
+          <div className="flex items-center gap-2 text-sm bg-blue-500/10 border border-blue-500/30 rounded px-3 py-1.5 mt-3">
+            <MapPin className="w-2.5 h-2.5 text-blue-400" />
             <span className="text-blue-300 font-medium">
               {context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}
             </span>
             {context.focusItem?.data?.file && (
               <>
-                <ChevronRight className="w-3 h-3 text-gray-500" />
-                <FileCode className="w-3 h-3 text-gray-400" />
+                <ChevronRight className="w-2 h-2 text-gray-500" />
+                <FileCode className="w-2 h-2 text-gray-400" />
                 <span className="text-gray-400 font-mono text-xs">
                   {context.focusItem.data.file}
                 </span>
@@ -370,7 +370,7 @@ Ask about vulnerabilities or select an action below.`;
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 space-y-3">
         <AnimatePresence mode="popLayout">
           {messages.map((message) => (
             <MessageBubble key={message.id} message={message} isUser={message.role === "user"} />
@@ -384,7 +384,7 @@ Ask about vulnerabilities or select an action below.`;
 
       {/* Quick Questions */}
       {messages.length <= 1 && !loading && (
-        <div className="px-4 pb-4 space-y-2 flex-shrink-0 border-t border-gray-800 pt-4">
+        <div className="px-3 pb-3 space-y-1 flex-shrink-0 border-t border-gray-800 pt-3">
           <div className="flex items-center gap-2 text-xs text-gray-400 mb-2 font-semibold">
             <Zap className="w-3.5 h-3.5" />
             Suggested Actions
@@ -394,12 +394,12 @@ Ask about vulnerabilities or select an action below.`;
               <motion.button
                 key={idx}
                 onClick={() => handleQuickQuestion(question)}
-                className="w-full text-left px-3 py-2.5 bg-gray-800/50 hover:bg-purple-500/10 rounded-lg text-xs transition border border-gray-700 hover:border-purple-500/30 group"
+                className="w-70% text-left px-2 py-1.5 bg-gray-800/50 hover:bg-purple-500/10 rounded-lg text-sm transition border border-gray-700 hover:border-purple-500/30 group"
                 whileHover={{ scale: 1.01, x: 2 }}
                 whileTap={{ scale: 0.99 }}
               >
                 <div className="flex items-center gap-2">
-                  <ChevronRight className="w-3.5 h-3.5 text-purple-400 group-hover:text-purple-300 transition-colors" />
+                  <ChevronRight className="w-2.5 h-2.5 text-purple-400 group-hover:text-purple-300 transition-colors" />
                   <span className="text-gray-200 group-hover:text-white transition-colors">{question}</span>
                 </div>
               </motion.button>
@@ -410,7 +410,7 @@ Ask about vulnerabilities or select an action below.`;
 
       {/* Premium Input Area */}
       <div className="border-t border-gray-800 p-4 flex-shrink-0 bg-[#0f1419]">
-        <div className="flex items-stretch gap-3 bg-[#111827] border border-gray-700 rounded-xl p-2 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
+        <div className="flex items-stretch gap-2 bg-[#111827] border border-gray-700 rounded-xl p-1 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
           {/* AtAI Model Selector */}
           <div className="relative flex-shrink-0">
             <select
@@ -453,7 +453,7 @@ Ask about vulnerabilities or select an action below.`;
           <motion.button
             onClick={handleSend}
             disabled={!input.trim() || loading}
-            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2 flex-shrink-0 shadow-lg shadow-purple-500/20 whitespace-nowrap"
+            className="px-2 py-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1 flex-shrink-0 shadow-lg shadow-purple-500/20 whitespace-nowrap"
             whileHover={{ scale: input.trim() && !loading ? 1.02 : 1 }}
             whileTap={{ scale: input.trim() && !loading ? 0.98 : 1 }}
             aria-label="Analyze"
@@ -461,7 +461,7 @@ Ask about vulnerabilities or select an action below.`;
             {loading ? (
               <>
                 <svg
-                  className="w-4 h-4 animate-spin"
+                  className="w-3 h-3 animate-spin"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
