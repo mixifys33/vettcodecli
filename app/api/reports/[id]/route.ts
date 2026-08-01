@@ -174,21 +174,64 @@ export async function DELETE(
 
     console.log('[Report Delete] Found report, deleting from ImageKit and MongoDB');
 
-    // Delete from ImageKit
+    // Delete from ImageKit - try multiple approaches
+    let imagekitDeleted = false;
     try {
+      console.log('[Report Delete] Searching for file in ImageKit...');
+      
+      // Method 1: Search by name
       const files = await imagekit.listFiles({
         path: "/vettcode-reports",
         searchQuery: `name="${reportId}.json"`,
       });
 
+      console.log('[Report Delete] ImageKit search result:', files?.length || 0, 'files found');
+
       if (files && files.length > 0) {
+        console.log('[Report Delete] Found file:', files[0].fileId, files[0].name);
         await imagekit.deleteFile(files[0].fileId);
-        console.log('[Report Delete] Deleted from ImageKit');
+        imagekitDeleted = true;
+        console.log('[Report Delete] Successfully deleted from ImageKit');
       } else {
-        console.log('[Report Delete] File not found in ImageKit, continuing with MongoDB deletion');
+        // Method 2: Try searching without path restriction
+        console.log('[Report Delete] Trying broader search...');
+        const allFiles = await imagekit.listFiles({
+          searchQuery: `name="${reportId}.json"`,
+        });
+        
+        console.log('[Report Delete] Broader search found:', allFiles?.length || 0, 'files');
+        
+        if (allFiles && allFiles.length > 0) {
+          console.log('[Report Delete] Found file in broader search:', allFiles[0].fileId);
+          await imagekit.deleteFile(allFiles[0].fileId);
+          imagekitDeleted = true;
+          console.log('[Report Delete] Successfully deleted from ImageKit (broader search)');
+        } else {
+          // Method 3: Try listing all files in folder and filtering
+          console.log('[Report Delete] Trying to list all files in folder...');
+          const folderFiles = await imagekit.listFiles({
+            path: "/vettcode-reports",
+            limit: 1000,
+          });
+          
+          const matchingFile = folderFiles?.find((f: any) => f.name === `${reportId}.json`);
+          
+          if (matchingFile) {
+            console.log('[Report Delete] Found file via folder listing:', matchingFile.fileId);
+            await imagekit.deleteFile(matchingFile.fileId);
+            imagekitDeleted = true;
+            console.log('[Report Delete] Successfully deleted from ImageKit (folder listing)');
+          } else {
+            console.log('[Report Delete] File not found in ImageKit after all attempts');
+          }
+        }
       }
-    } catch (imagekitError) {
-      console.error('[Report Delete] ImageKit deletion failed:', imagekitError);
+    } catch (imagekitError: any) {
+      console.error('[Report Delete] ImageKit deletion error:', {
+        message: imagekitError.message,
+        stack: imagekitError.stack,
+        response: imagekitError.response?.data || imagekitError.response,
+      });
       // Continue with MongoDB deletion even if ImageKit fails
     }
 
@@ -199,6 +242,7 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
       message: "Report deleted successfully",
+      imagekitDeleted, // Return whether ImageKit deletion succeeded
     });
   } catch (error) {
     console.error("[Report Delete] Error:", error);

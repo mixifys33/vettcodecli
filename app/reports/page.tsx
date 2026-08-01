@@ -115,10 +115,17 @@ export default function ReportsPage() {
         throw new Error(data.error || "Failed to delete report");
       }
 
-      // Success
-      toast.success(`"${projectName}" deleted successfully`, {
-        description: "The report has been permanently removed",
-      });
+      // Success - show detailed feedback
+      if (data.imagekitDeleted) {
+        toast.success(`"${projectName}" deleted successfully`, {
+          description: "Report removed from both database and storage",
+        });
+      } else {
+        toast.warning(`"${projectName}" partially deleted`, {
+          description: "Removed from database, but file may still exist in storage. Contact support if needed.",
+        });
+        console.warn('ImageKit deletion failed for:', reportId);
+      }
       
       // Remove from local state immediately
       setReports(prevReports => prevReports.filter(r => r.id !== reportId));
