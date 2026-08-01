@@ -1,0 +1,225 @@
+AI ASSISTANT - PRODUCTION IMPLEMENTATION
+=========================================
+
+Overview:
+---------
+The AI Assistant is a production-ready chat interface that helps developers understand and fix security vulnerabilities found in their VettCode scans. It uses Gemma 2 9B via OpenRouter API.
+
+Key Features:
+-------------
+✅ Real-time chat with AI security expert
+✅ Context-aware responses based on scan report
+✅ Markdown rendering with syntax highlighting
+✅ Code examples for vulnerability fixes
+✅ Rate limiting (20 requests/hour per IP)
+✅ Request timeout handling (30s)
+✅ Graceful error handling
+✅ Loading states and user feedback
+✅ Quick question suggestions
+✅ Conversation history (last 5 messages)
+✅ Character limit on input (500 chars)
+✅ Abort/cancel ongoing requests
+✅ Responsive UI with animations
+
+Architecture:
+-------------
+
+1. Components:
+   - AIAssistant.tsx - Main chat UI component
+   - MessageBubble - Individual message display with markdown
+   - LoadingIndicator - Animated loading state
+
+2. Hooks:
+   - useAIChat.ts - Manages chat state, API calls, error handling
+   - Handles message history, loading states, cancellation
+
+3. API Route:
+   - /api/ai-chat - Backend endpoint with production features
+
+4. Libraries Used:
+   - react-markdown - Markdown parsing and rendering
+   - remark-gfm - GitHub Flavored Markdown support
+   - react-syntax-highlighter - Code syntax highlighting
+   - framer-motion - Smooth animations
+   - react-hot-toast - Error notifications
+
+Production Best Practices:
+---------------------------
+
+1. RATE LIMITING
+   - 20 requests per hour per IP address
+   - In-memory rate limit store (use Redis in production scale)
+   - Returns 429 status with reset time when exceeded
+   - Headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+
+2. INPUT VALIDATION
+   - Message length validation (max 500 chars in UI, 1000 in API)
+   - Type checking for all inputs
+   - Sanitization of user inputs
+   - Validation of report data structure
+
+3. ERROR HANDLING
+   - Try-catch blocks around all async operations
+   - Graceful fallback messages on API failures
+   - Request timeout (30s) with AbortController
+   - Network error detection and user-friendly messages
+   - Development vs production error messages
+
+4. SECURITY
+   - Rate limiting prevents abuse
+   - Input validation prevents injection attacks
+   - API key stored in environment variables
+   - XSS prevention in markdown rendering
+   - Sanitization of HTML output
+   - CORS headers properly configured
+
+5. PERFORMANCE
+   - Request cancellation support
+   - Conversation history limited to 5 messages (token optimization)
+   - Memoization of components (React.memo)
+   - useCallback for event handlers
+   - Smooth scroll behavior
+   - Lazy rendering of markdown
+
+6. USER EXPERIENCE
+   - Loading indicators during API calls
+   - Error toasts for failures
+   - Quick question suggestions for first-time users
+   - Character counter on input
+   - Keyboard shortcuts (Enter to send, Shift+Enter for newline)
+   - Auto-scroll to latest message
+   - Cancel button during loading
+   - Responsive design
+   - Smooth animations
+
+7. CODE QUALITY
+   - TypeScript for type safety
+   - Proper error types and interfaces
+   - Separation of concerns (hooks, components, API)
+   - Reusable utility functions
+   - Clean component structure
+   - Proper naming conventions
+   - Comments where needed
+
+API Configuration:
+------------------
+
+Environment Variables Required:
+- OPENROUTER_API_KEY: Your OpenRouter API key
+- NEXT_PUBLIC_SITE_URL: Your site URL for attribution
+
+Model Configuration:
+- Model: google/gemma-2-9b-it:free
+- Temperature: 0.7 (balanced creativity/accuracy)
+- Max Tokens: 1500
+- Top P: 0.9
+
+System Prompt Strategy:
+-----------------------
+The AI is given:
+1. Report context (score, grade, severity counts)
+2. Top 15 priority issues with details
+3. Guidelines for communication style
+4. Instructions to provide actionable advice
+5. Code examples when relevant
+
+Conversation history (last 5 messages) is included for context while keeping token usage reasonable.
+
+Rate Limiting Details:
+----------------------
+- Window: 1 hour (3600 seconds)
+- Max requests: 20 per IP
+- Implementation: In-memory Map (production should use Redis)
+- Cleanup: Automatic cleanup every hour
+- Response headers include rate limit info
+
+Error Scenarios Handled:
+------------------------
+1. API key not configured → User-friendly message
+2. Rate limit exceeded → 429 status with reset time
+3. Request timeout (30s) → Prompt to ask more specific question
+4. OpenRouter API error → Fallback message
+5. Network errors → Connection error message
+6. Validation errors → 400 status with specific error
+7. Unexpected errors → Generic error message (detailed in dev mode)
+
+Message Format:
+---------------
+Messages support:
+- **Bold text**
+- *Italic text*
+- `Inline code`
+- Code blocks with syntax highlighting
+- Bullet lists
+- Numbered lists
+- Links
+- Headers (H1, H2, H3)
+- Line breaks
+
+Testing Checklist:
+------------------
+✅ Send message successfully
+✅ Receive AI response with markdown
+✅ Code blocks render with syntax highlighting
+✅ Rate limiting triggers after 20 requests
+✅ Long requests timeout at 30 seconds
+✅ Cancel button stops ongoing requests
+✅ Quick questions work correctly
+✅ Character limit enforced
+✅ Enter key sends message
+✅ Shift+Enter creates new line
+✅ Error messages display correctly
+✅ Auto-scroll works
+✅ Loading indicator shows during API call
+✅ Responsive on mobile/tablet/desktop
+
+Monitoring Recommendations:
+---------------------------
+1. Track API response times
+2. Monitor rate limit hits
+3. Log API errors for debugging
+4. Track popular questions for insights
+5. Monitor token usage costs
+6. Alert on high error rates
+
+Future Enhancements:
+--------------------
+1. Redis-based rate limiting for horizontal scaling
+2. Conversation persistence (save chat history)
+3. Export chat to file
+4. Multi-language support
+5. Voice input/output
+6. Streaming responses (SSE or WebSocket)
+7. Custom AI models per user preference
+8. Advanced analytics on conversations
+9. Feedback mechanism (thumbs up/down)
+10. Suggested follow-up questions
+
+Deployment Notes:
+-----------------
+1. Ensure OPENROUTER_API_KEY is set in production environment
+2. Configure NEXT_PUBLIC_SITE_URL for proper attribution
+3. Consider implementing Redis for rate limiting at scale
+4. Monitor OpenRouter API costs and usage
+5. Set up error logging (Sentry, LogRocket, etc.)
+6. Enable CDN caching for static assets
+7. Configure proper CORS headers
+
+Cost Considerations:
+--------------------
+- Using free tier: google/gemma-2-9b-it:free
+- No direct costs currently
+- Rate limiting prevents abuse
+- Token optimization through history limiting
+- Consider paid models for better responses if needed
+
+Security Checklist:
+-------------------
+✅ API keys in environment variables (not in code)
+✅ Rate limiting implemented
+✅ Input validation on all endpoints
+✅ Markdown sanitization for XSS prevention
+✅ Request timeout to prevent hanging
+✅ Error messages don't expose sensitive info
+✅ CORS properly configured
+✅ No PII stored in conversation history
