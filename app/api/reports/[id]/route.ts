@@ -4,12 +4,35 @@ import jwt from 'jsonwebtoken';
 import connectDB from '@/backend/config/database';
 import Report from '@/backend/models/Report';
 
-// Initialize ImageKit
-const imagekit = new ImageKit({
-  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "",
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
-  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
-});
+// Initialize ImageKit with validation
+function getImageKitInstance() {
+  const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY;
+  const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
+  const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
+
+  console.log('[ImageKit Init] Config check:', {
+    hasPublicKey: !!publicKey,
+    hasPrivateKey: !!privateKey,
+    hasUrlEndpoint: !!urlEndpoint,
+    publicKeyLength: publicKey?.length,
+    privateKeyLength: privateKey?.length,
+  });
+
+  if (!publicKey || !privateKey || !urlEndpoint) {
+    console.error('[ImageKit Init] Missing credentials!', {
+      publicKey: publicKey ? 'present' : 'MISSING',
+      privateKey: privateKey ? 'present' : 'MISSING',
+      urlEndpoint: urlEndpoint ? 'present' : 'MISSING',
+    });
+    throw new Error('ImageKit credentials not configured');
+  }
+
+  return new ImageKit({
+    publicKey,
+    privateKey,
+    urlEndpoint,
+  });
+}
 
 interface JwtPayload {
   id: string;
@@ -176,7 +199,12 @@ export async function DELETE(
 
     // Delete from ImageKit - try multiple approaches
     let imagekitDeleted = false;
+    let imagekitError = null;
+    
     try {
+      const imagekit = getImageKitInstance();
+      console.log('[Report Delete] ImageKit instance created successfully');
+      
       console.log('[Report Delete] Searching for file in ImageKit...');
       
       // Method 1: Search by name
@@ -185,27 +213,33 @@ export async function DELETE(
         searchQuery: `name="${reportId}.json"`,
       });
 
-      console.log('[Report Delete] ImageKit search result:', files?.length || 0, 'files found');
+      console.log('[Report Delete] ImageKit search result:', {
+        filesFound: files?.length || 0,
+        files: files?.map((f: any) => ({ fileId: f.fileId, name: f.name, filePath: f.filePath }))
+      });
 
       if (files && files.length > 0) {
-        console.log('[Report Delete] Found file:', files[0].fileId, files[0].name);
-        await imagekit.deleteFile(files[0].fileId);
+        console.log('[Report Delete] Attempting to delete file:', files[0].fileId);
+        const deleteResult = await imagekit.deleteFile(files[0].fileId);
         imagekitDeleted = true;
-        console.log('[Report Delete] Successfully deleted from ImageKit');
+        console.log('[Report Delete] Successfully deleted from ImageKit:', deleteResult);
       } else {
         // Method 2: Try searching without path restriction
-        console.log('[Report Delete] Trying broader search...');
+        console.log('[Report Delete] Trying broader search without path...');
         const allFiles = await imagekit.listFiles({
           searchQuery: `name="${reportId}.json"`,
         });
         
-        console.log('[Report Delete] Broader search found:', allFiles?.length || 0, 'files');
+        console.log('[Report Delete] Broader search result:', {
+          filesFound: allFiles?.length || 0,
+          files: allFiles?.map((f: any) => ({ fileId: f.fileId, name: f.name, filePath: f.filePath }))
+        });
         
         if (allFiles && allFiles.length > 0) {
-          console.log('[Report Delete] Found file in broader search:', allFiles[0].fileId);
-          await imagekit.deleteFile(allFiles[0].fileId);
+          console.log('[Report Delete] Attempting to delete file (broader search):', allFiles[0].fileId);
+          const deleteResult = await imagekit.deleteFile(allFiles[0].fileId);
           imagekitDeleted = true;
-          console.log('[Report Delete] Successfully deleted from ImageKit (broader search)');
+          console.log('[Report Delete] Successfully deleted from ImageKit (broader search):', deleteResult);
         } else {
           // Method 3: Try listing all files in folder and filtering
           console.log('[Report Delete] Trying to list all files in folder...');
@@ -214,25 +248,33 @@ export async function DELETE(
             limit: 1000,
           });
           
+          console.log('[Report Delete] Folder listing result:', {
+            filesFound: folderFiles?.length || 0,
+            sampleFiles: folderFiles?.slice(0, 5).map((f: any) => ({ name: f.name, fileId: f.fileId }))
+          });
+          
           const matchingFile = folderFiles?.find((f: any) => f.name === `${reportId}.json`);
           
           if (matchingFile) {
-            console.log('[Report Delete] Found file via folder listing:', matchingFile.fileId);
-            await imagekit.deleteFile(matchingFile.fileId);
+            console.log('[Report Delete] Found matching file in folder listing:', matchingFile.fileId);
+            const deleteResult = await imagekit.deleteFile(matchingFile.fileId);
             imagekitDeleted = true;
-            console.log('[Report Delete] Successfully deleted from ImageKit (folder listing)');
+            console.log('[Report Delete] Successfully deleted from ImageKit (folder listing):', deleteResult);
           } else {
             console.log('[Report Delete] File not found in ImageKit after all attempts');
+            console.log('[Report Delete] Searched for:', `${reportId}.json`);
           }
         }
       }
-    } catch (imagekitError: any) {
+    } catch (error: any) {
+      imagekitError = error;
       console.error('[Report Delete] ImageKit deletion error:', {
-        message: imagekitError.message,
-        stack: imagekitError.stack,
-        response: imagekitError.response?.data || imagekitError.response,
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        response: error.response?.data || error.response,
+        help: error.help,
       });
-      // Continue with MongoDB deletion even if ImageKit fails
     }
 
     // Delete from MongoDB
@@ -242,7 +284,11 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
       message: "Report deleted successfully",
-      imagekitDeleted, // Return whether ImageKit deletion succeeded
+      imagekitDeleted,
+      imagekitError: imagekitError ? {
+        message: imagekitError.message,
+        name: imagekitError.name,
+      } : null,
     });
   } catch (error) {
     console.error("[Report Delete] Error:", error);
