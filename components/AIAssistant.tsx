@@ -8,6 +8,16 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useAIChat } from "@/hooks/useAIChat";
 import toast from "react-hot-toast";
+import { 
+  Brain, 
+  MapPin, 
+  Zap, 
+  FileCode, 
+  Shield, 
+  AlertTriangle,
+  ChevronRight,
+  X
+} from "lucide-react";
 
 interface AIAssistantProps {
   report: any;
@@ -217,6 +227,17 @@ Ask about vulnerabilities or select an action below.`;
 
   // Context-aware quick actions
   const getContextualActions = () => {
+    // If a specific file is focused
+    if (context?.focusItem?.data?.file) {
+      const fileName = context.focusItem.data.file;
+      return [
+        `Why is ${fileName} flagged as high risk?`,
+        `What security vulnerabilities exist in ${fileName}?`,
+        `How should I secure ${fileName}?`,
+        `Show me code examples to fix issues in ${fileName}`,
+      ];
+    }
+
     if (context?.section === "architecture") {
       return [
         "Explain the system architecture structure",
@@ -273,7 +294,7 @@ Ask about vulnerabilities or select an action below.`;
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">🧠</span>
+              <Brain className="w-5 h-5 text-purple-400" />
             </div>
             <div>
               <h3 className="font-semibold">Report Copilot</h3>
@@ -283,8 +304,9 @@ Ask about vulnerabilities or select an action below.`;
           {loading && (
             <button
               onClick={cancelRequest}
-              className="text-xs px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition"
+              className="text-xs px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition flex items-center gap-1.5"
             >
+              <X className="w-3 h-3" />
               Cancel
             </button>
           )}
@@ -293,14 +315,18 @@ Ask about vulnerabilities or select an action below.`;
         {/* Context Indicator */}
         {context?.section && (
           <div className="flex items-center gap-2 text-xs bg-blue-500/10 border border-blue-500/30 rounded px-3 py-1.5 mt-3">
-            <span className="text-blue-400">📍</span>
+            <MapPin className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-blue-300 font-medium">
               {context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}
             </span>
-            {context.focusItem && (
-              <span className="text-gray-400">
-                → {context.focusItem.type === "file" ? context.focusItem.data : context.focusItem.data?.file || "Selected item"}
-              </span>
+            {context.focusItem?.data?.file && (
+              <>
+                <ChevronRight className="w-3 h-3 text-gray-500" />
+                <FileCode className="w-3 h-3 text-gray-400" />
+                <span className="text-gray-400 font-mono text-xs">
+                  {context.focusItem.data.file}
+                </span>
+              </>
             )}
           </div>
         )}
@@ -322,19 +348,22 @@ Ask about vulnerabilities or select an action below.`;
       {/* Quick Questions */}
       {messages.length <= 1 && !loading && (
         <div className="px-4 pb-4 space-y-2 flex-shrink-0 border-t border-gray-800 pt-4">
-          <div className="text-xs text-gray-400 mb-2 font-semibold">⚡ Suggested Actions</div>
+          <div className="flex items-center gap-2 text-xs text-gray-400 mb-2 font-semibold">
+            <Zap className="w-3.5 h-3.5" />
+            Suggested Actions
+          </div>
           <div className="space-y-2">
             {quickQuestions.map((question, idx) => (
               <motion.button
                 key={idx}
                 onClick={() => handleQuickQuestion(question)}
-                className="w-full text-left px-3 py-2.5 bg-gray-800/50 hover:bg-purple-500/10 rounded-lg text-xs transition border border-gray-700 hover:border-purple-500/30"
+                className="w-full text-left px-3 py-2.5 bg-gray-800/50 hover:bg-purple-500/10 rounded-lg text-xs transition border border-gray-700 hover:border-purple-500/30 group"
                 whileHover={{ scale: 1.01, x: 2 }}
                 whileTap={{ scale: 0.99 }}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-400">▸</span>
-                  <span className="text-gray-200">{question}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-purple-400 group-hover:text-purple-300 transition-colors" />
+                  <span className="text-gray-200 group-hover:text-white transition-colors">{question}</span>
                 </div>
               </motion.button>
             ))}

@@ -86,6 +86,7 @@ export default function ArchitecturePage() {
   const [showAI, setShowAI] = useState(false);
   const [aiContext, setAiContext] = useState<string | null>(null);
   const [fullReport, setFullReport] = useState<any>(null);
+  const [selectedRisk, setSelectedRisk] = useState<any>(null);
 
   // Generate intelligent insight based on architecture data
   const generateInsight = () => {
@@ -154,6 +155,8 @@ export default function ArchitecturePage() {
   }, [reportId]);
 
   const handleAskAI = (risk: any) => {
+    setSelectedRisk(risk);
+    
     // Build context for this specific risk
     const context = `I have a question about this high-risk file in my project:
 
@@ -433,17 +436,23 @@ What security concerns should I be aware of for this file, and what specific ste
             defaultWidth={450}
             minWidth={350}
             maxWidth={900}
-            onClose={() => setShowAI(false)}
+            onClose={() => {
+              setShowAI(false);
+              setSelectedRisk(null);
+            }}
           >
             <AIAssistant 
               report={fullReport} 
-              onClose={() => setShowAI(false)}
+              onClose={() => {
+                setShowAI(false);
+                setSelectedRisk(null);
+              }}
               initialMessage={aiContext || undefined}
               context={{
                 section: "architecture",
-                focusItem: aiContext ? {
+                focusItem: selectedRisk ? {
                   type: "risk",
-                  data: riskSurface?.find((r: any) => aiContext.includes(r.file))
+                  data: selectedRisk
                 } : undefined
               }}
             />
