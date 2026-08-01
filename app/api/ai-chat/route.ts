@@ -1,6 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChatRequest, ChatResponse } from "@/types/chat";
 
+// Fallback response generator when API is not available
+function generateFallbackResponse(message: string, report: ChatRequest["report"]): string {
+  const lowerMessage = message.toLowerCase();
+  
+  // Critical issues
+  if (lowerMessage.includes("critical") || lowerMessage.includes("priority") || lowerMessage.includes("most important")) {
+    const criticalIssues = report.findings.filter((f) => f.severity === "critical");
+    if (criticalIssues.length > 0) {
+      return `**Critical Issues Found (${criticalIssues.length})**\n\n${criticalIssues.slice(0, 5).map((issue, idx) => 
+        `${idx + 1}. **${issue.title}**${issue.file ? ` in \`${issue.file}\`` : ""}\n   - Category: ${issue.category || "Unknown"}\n   ${issue.description ? `- ${issue.description}\n` : ""}`
+      ).join("\n")}\n\n**Recommendation:** Address critical issues first as they pose the highest security risk.`;
+    }
+    return `Good news! No critical issues were found in your scan. Focus on addressing high and medium severity issues.`;
+  }
+  
+  // SQL Injection
+  if (lowerMessage.includes("sql") || lowerMessage.includes("injection")) {
+    const sqlIssues = report.findings.filter((f) => 
+      f.title?.toLowerCase().includes("sql") || f.category?.toLowerCase().includes("sql")
+    );
+    if (sqlIssues.length > 0) {
+      return `**SQL Injection Issues (${sqlIssues.length})**\n\n**Common Fixes:**\n- Use parameterized queries or prepared statements\n- Never concatenate user input directly into SQL\n- Use ORM frameworks that handle escaping\n- Validate and sanitize all user inputs\n\n**Example (Node.js):**\n\`\`\`javascript\n// Bad ❌\nconst query = "SELECT * FROM users WHERE id = " + userId;\n\n// Good ✅\nconst query = "SELECT * FROM users WHERE id = ?";\ndb.query(query, [userId]);\n\`\`\``;
+    }
+    return "No SQL injection vulnerabilities were found in your scan.";
+  }
+  
+  // XSS
+  if (lowerMessage.includes("xss") || lowerMessage.includes("cross-site")) {
+    const xssIssues = report.findings.filter((f) => 
+      f.title?.toLowerCase().includes("xss") || f.category?.toLowerCase().includes("xss")
+    );
+    if (xssIssues.length > 0) {
+      return `**XSS Vulnerabilities (${xssIssues.length})**\n\n**Prevention:**\n- Sanitize user input before displaying\n- Use Content Security Policy (CSP)\n- Escape HTML entities\n- Use frameworks that auto-escape (React, Vue)\n\n**Example:**\n\`\`\`javascript\n// Use textContent instead of innerHTML\nelement.textContent = userInput; // Safe\nelement.innerHTML = userInput;   // Dangerous\n\`\`\``;
+    }
+    return "No XSS vulnerabilities were detected in your scan.";
+  }
+  
+  // Impact/Risk
+  if (lowerMessage.includes("impact") || lowerMessage.includes("risk")) {
+    return `**Security Impact Summary for ${report.projectName}**\n\n**Overall Risk Level:** ${
+      report.score < 40 ? "🔴 Critical" : report.score < 60 ? "🟠 High" : report.score < 80 ? "🟡 Medium" : "🟢 Low"
+    }\n\n**Breakdown:**\n- Critical: ${report.findings.filter(f => f.severity === "critical").length} issues (Immediate attention required)\n- High: ${report.findings.filter(f => f.severity === "high").length} issues (Fix within days)\n- Medium: ${report.findings.filter(f => f.severity === "medium").length} issues (Fix within weeks)\n- Low: ${report.findings.filter(f => f.severity === "low").length} issues (Fix when convenient)\n\n**Recommendation:** Start with critical and high severity issues to reduce risk quickly.`;
+  }
+  
+  // Prevention
+  if (lowerMessage.includes("prevent") || lowerMessage.includes("best practice")) {
+    return `**Security Best Practices**\n\n1. **Input Validation:** Always validate and sanitize user inputs\n2. **Authentication:** Use strong password policies and MFA\n3. **Authorization:** Implement proper access controls\n4. **Encryption:** Use HTTPS and encrypt sensitive data\n5. **Dependencies:** Keep libraries up-to-date\n6. **Error Handling:** Don't expose sensitive info in errors\n7. **Logging:** Monitor and log security events\n8. **Code Review:** Regular security audits\n9. **Testing:** Include security tests in CI/CD\n10. **Training:** Keep team educated on security\n\nFor specific issues in your report, focus on the categories with the most findings.`;
+  }
+  
+  // Fix instructions
+  if (lowerMessage.includes("fix") || lowerMessage.includes("how do i")) {
+    const topIssues = report.findings.slice(0, 3);
+    return `**Top Issues to Fix:**\n\n${topIssues.map((issue, idx) => 
+      `**${idx + 1}. ${issue.title}** [${issue.severity.toUpperCase()}]\n${issue.file ? `   File: \`${issue.file}\`\n` : ""}${issue.mitigation ? `   Fix: ${issue.mitigation}\n` : ""}`
+    ).join("\n")}\n\n**General Approach:**\n1. Review the code at the identified location\n2. Apply the recommended fix\n3. Test thoroughly\n4. Re-scan to verify the fix\n\nNeed specific code examples? Try asking about a particular vulnerability type (e.g., "How do I fix SQL injection?").`;
+  }
+  
+  // Default response
+  return `**Report Summary for ${report.projectName}**\n\n- **Score:** ${report.score}/100 (Grade: ${report.grade})\n- **Total Issues:** ${report.findings.length}\n- **Critical:** ${report.findings.filter(f => f.severity === "critical").length}\n- **High:** ${report.findings.filter(f => f.severity === "high").length}\n- **Medium:** ${report.findings.filter(f => f.severity === "medium").length}\n- **Low:** ${report.findings.filter(f => f.severity === "low").length}\n\n**I can help you with:**\n- Understanding critical issues\n- Fixing specific vulnerability types (SQL injection, XSS, etc.)\n- Explaining security impact\n- Prevention strategies\n- Prioritizing fixes\n\nWhat would you like to know more about?`;
+}
+
 // Rate limiting map (in-memory, production should use Redis)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
@@ -179,10 +240,13 @@ ${reportContext}
     // Check if API key is configured
     if (!process.env.OPENROUTER_API_KEY) {
       console.error("OPENROUTER_API_KEY not configured");
+      
+      // Provide helpful fallback response based on the question
+      const fallbackResponse = generateFallbackResponse(message, report);
+      
       return NextResponse.json(
         {
-          response:
-            "The AI assistant is not properly configured. Please contact support if this issue persists.",
+          response: fallbackResponse,
         },
         { status: 200 }
       );
@@ -224,13 +288,39 @@ ${reportContext}
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorText = await response.text().catch(() => "Unknown error");
-        console.error("OpenRouter API error:", response.status, errorText);
+        let errorText = "Unknown error";
+        let errorData: any = {};
+        
+        try {
+          errorText = await response.text();
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          // If parsing fails, use raw text
+        }
+        
+        console.error("OpenRouter API error:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+          headers: Object.fromEntries(response.headers.entries()),
+        });
+
+        // Specific error messages based on status
+        let userMessage = "I'm experiencing technical difficulties right now. Please try again in a moment.";
+        
+        if (response.status === 401) {
+          console.error("OpenRouter API key is invalid or missing");
+          userMessage = "The AI service authentication failed. Please contact support.";
+        } else if (response.status === 429) {
+          userMessage = "The AI service is currently rate limited. Please try again in a few minutes.";
+        } else if (response.status === 400) {
+          console.error("Bad request to OpenRouter:", errorText);
+          userMessage = "There was an issue with the request format. Please try rephrasing your question.";
+        }
 
         return NextResponse.json(
           {
-            response:
-              "I'm experiencing technical difficulties right now. Please try again in a moment. In the meantime, you can review the detailed findings and recommendations in your report.",
+            response: `${userMessage} In the meantime, you can review the detailed findings and recommendations in your report.`,
           },
           { status: 200 }
         );
