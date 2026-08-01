@@ -119,12 +119,12 @@ export default function AIAssistant({ report, onClose, initialMessage }: AIAssis
     if (initialMessage && input === "") {
       setInput(initialMessage);
     }
-  }, [initialMessage]);
+  }, [initialMessage, input]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Generate initial welcome message
-  const initialMessage = `Hi! 👋 I'm your AI security assistant powered by **Gemma 2**.
+  const welcomeMessage = `Hi! 👋 I'm your AI security assistant powered by **Gemma 2**.
 
 I've analyzed your report for **${report.projectName}**:
 - **${report.findings.length}** total security issues found
@@ -142,7 +142,7 @@ Ask me anything about your security report!`;
 
   const { messages, loading, error, sendMessage, cancelRequest } = useAIChat({
     report,
-    initialMessage,
+    initialMessage: welcomeMessage,
   });
 
   const scrollToBottom = useCallback(() => {
