@@ -16,7 +16,9 @@ import {
   Shield, 
   AlertTriangle,
   ChevronRight,
-  X
+  X,
+  Send,
+  ChevronDown
 } from "lucide-react";
 
 interface AIAssistantProps {
@@ -130,6 +132,7 @@ LoadingIndicator.displayName = "LoadingIndicator";
 export default function AIAssistant({ report, onClose, initialMessage, context }: AIAssistantProps) {
   const [input, setInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<"auto" | "flash" | "deep" | "code" | "core">("auto");
 
   // Use initialMessage if provided
   useEffect(() => {
@@ -139,6 +142,29 @@ export default function AIAssistant({ report, onClose, initialMessage, context }
   }, [initialMessage, input]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Dynamic placeholder based on context
+  const getPlaceholder = () => {
+    if (context?.focusItem?.data?.file) {
+      return `Ask about ${context.focusItem.data.file}...`;
+    }
+    if (context?.section === "architecture") {
+      return "Ask about architecture, data flow, or security boundaries...";
+    }
+    if (context?.section === "risk-surface") {
+      return "Ask about risks, vulnerabilities, or fixes...";
+    }
+    return "Ask about risks, architecture, or fixes...";
+  };
+
+  // Model descriptions
+  const modelDescriptions = {
+    auto: "Smart model selection",
+    flash: "Instant answers",
+    deep: "Advanced reasoning",
+    code: "Code & file analysis",
+    core: "Balanced responses",
+  };
 
   // Generate context-aware insight
   const generateInsight = () => {
@@ -185,6 +211,7 @@ Ask about vulnerabilities or select an action below.`;
   const { messages, loading, error, sendMessage, cancelRequest } = useAIChat({
     report,
     initialMessage: welcomeMessage,
+    selectedModel,
   });
 
   const scrollToBottom = useCallback(() => {
@@ -301,15 +328,17 @@ Ask about vulnerabilities or select an action below.`;
               <p className="text-xs text-gray-400">Intelligent analysis assistant</p>
             </div>
           </div>
-          {loading && (
-            <button
-              onClick={cancelRequest}
-              className="text-xs px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition flex items-center gap-1.5"
-            >
-              <X className="w-3 h-3" />
-              Cancel
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {loading && (
+              <button
+                onClick={cancelRequest}
+                className="text-xs px-3 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition flex items-center gap-1.5"
+              >
+                <X className="w-3 h-3" />
+                <span>Stop</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Context Indicator */}
@@ -371,56 +400,78 @@ Ask about vulnerabilities or select an action below.`;
         </div>
       )}
 
-      {/* Input */}
-      <div className="border-t border-gray-800 p-4 flex-shrink-0">
-        <div className="flex gap-2">
+      {/* Premium Input Area */}
+      <div className="border-t border-gray-800 p-4 flex-shrink-0 bg-[#0f1419]">
+        <div className="flex items-center gap-3 bg-[#111827] border border-gray-700 rounded-xl p-2 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
+          {/* AtAI Model Selector */}
+          <div className="relative flex-shrink-0">
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value as any)}
+              className="appearance-none bg-[#1F2937] text-sm text-gray-200 font-medium px-3 py-2 pr-10 rounded-lg border border-gray-600 hover:border-gray-500 focus:outline-none focus:border-purple-500 cursor-pointer transition"
+              disabled={loading}
+              title={modelDescriptions[selectedModel]}
+            >
+              <option value="auto">AtAI Auto</option>
+              <option value="flash">⚡ AtAI Flash</option>
+              <option value="deep">🧠 AtAI Deep</option>
+              <option value="code">🎯 AtAI Code</option>
+              <option value="core">💡 AtAI Core</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
+          {/* Input Field */}
           <input
             ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about security issues..."
-            className="flex-1 px-4 py-2 bg-gray-900 text-white border border-gray-800 rounded-lg focus:border-primary focus:outline-none text-sm placeholder-gray-500"
+            placeholder={getPlaceholder()}
+            className="flex-1 bg-transparent text-[#E5E7EB] text-sm placeholder-[#6B7280] focus:outline-none px-2"
             disabled={loading}
             maxLength={500}
           />
+
+          {/* Analyze Button */}
           <motion.button
             onClick={handleSend}
             disabled={!input.trim() || loading}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            whileHover={{ scale: input.trim() && !loading ? 1.05 : 1 }}
-            whileTap={{ scale: input.trim() && !loading ? 0.95 : 1 }}
-            aria-label="Send message"
+            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2 flex-shrink-0 shadow-lg shadow-purple-500/20"
+            whileHover={{ scale: input.trim() && !loading ? 1.02 : 1 }}
+            whileTap={{ scale: input.trim() && !loading ? 0.98 : 1 }}
+            aria-label="Analyze"
           >
             {loading ? (
-              <svg
-                className="w-5 h-5 animate-spin"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
+              <>
+                <svg
+                  className="w-4 h-4 animate-spin"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                <span>Analyzing...</span>
+              </>
             ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
-              </svg>
+              <>
+                <span>Analyze</span>
+                <Send className="w-4 h-4" />
+              </>
             )}
           </motion.button>
         </div>
-        <div className="text-xs text-gray-500 mt-2 flex items-center justify-between">
-          <span>Press Enter to send, Shift+Enter for new line</span>
+        
+        {/* Subtle hint + character count */}
+        <div className="text-xs text-gray-500 mt-2 flex items-center justify-between px-1">
+          <span className="text-gray-600">{modelDescriptions[selectedModel]}</span>
           <span>{input.length}/500</span>
         </div>
       </div>

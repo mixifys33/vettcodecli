@@ -8,6 +8,7 @@ export interface Message {
 
 export interface ChatRequest {
   message: string;
+  model?: "auto" | "flash" | "deep" | "code" | "core"; // AtAI intelligence mode
   report: {
     projectName: string;
     score: number;

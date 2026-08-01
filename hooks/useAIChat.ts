@@ -4,9 +4,10 @@ import { Message, ChatRequest, ChatResponse } from "@/types/chat";
 interface UseAIChatProps {
   report: any;
   initialMessage?: string;
+  selectedModel?: "auto" | "flash" | "deep" | "code" | "core";
 }
 
-export function useAIChat({ report, initialMessage }: UseAIChatProps) {
+export function useAIChat({ report, initialMessage, selectedModel = "auto" }: UseAIChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export function useAIChat({ report, initialMessage }: UseAIChatProps) {
       try {
         const requestBody: ChatRequest = {
           message: content.trim(),
+          model: selectedModel,
           report: {
             projectName: report.projectName,
             score: report.score,

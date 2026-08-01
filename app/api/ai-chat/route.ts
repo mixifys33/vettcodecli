@@ -316,7 +316,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const { message, report, history } = body;
+    const { message, report, history, model = "auto" } = body;
+
+    // Map AtAI intelligence modes to actual models
+    const getModelsForMode = (mode: string): string[] => {
+      switch (mode) {
+        case "flash":
+          return ["ling-3.0-flash:free"];
+        case "deep":
+          return ["nvidia/nemotron-3-super:free"];
+        case "code":
+          return ["google/gemma-4-31b-it:free"];
+        case "core":
+          return ["openai/gpt-oss-20b:free"];
+        case "auto":
+        default:
+          // Auto mode tries all models in priority order
+          return [
+            "ling-3.0-flash:free",
+            "nvidia/nemotron-3-super:free",
+            "google/gemma-4-31b-it:free",
+            "nvidia/nemotron-3-nano-30b-a3b:free",
+            "openai/gpt-oss-20b:free",
+          ];
+      }
+    };
+
+    const modelsToTry = getModelsForMode(model);
 
     // Extract focused file from message if present
     const focusFileMatch = message.match(/(?:in|for|about)\s+([a-zA-Z0-9_\-./\\]+\.[a-zA-Z0-9]+)/i);
@@ -387,15 +413,6 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
         { status: 200 }
       );
     }
-
-    // Try multiple FREE models that are actually available (verified Dec 2025)
-    const modelsToTry = [
-      "ling-3.0-flash:free",
-      "nvidia/nemotron-3-super:free",
-      "google/gemma-4-31b-it:free",
-      "nvidia/nemotron-3-nano-30b-a3b:free",
-      "openai/gpt-oss-20b:free",
-    ];
 
     let lastError: any = null;
     let modelUsed = null;
