@@ -252,55 +252,129 @@ ${reportContext}
       );
     }
 
-    // Call OpenRouter API
+    // Try multiple models in case one is unavailable
+    const modelsToTry = [
+      "google/gemini-2.0-flash-exp:free",
+      "qwen/qwen-2.5-coder-32b-instruct:free",
+      "meta-llama/llama-3.2-3b-instruct:free",
+      "google/gemma-2-9b-it:free",
+    ];
+
+    let lastError: any = null;
+    let modelUsed = null;
+
+    // Call OpenRouter API with fallback models
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://vettcodecli.vercel.app",
-          "X-Title": "VettCode CLI Security Scanner",
-        },
-        body: JSON.stringify({
-          model: "google/gemma-2-9b-it:free",
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt,
-            },
-            ...conversationHistory,
-            {
-              role: "user",
-              content: message,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 1500,
-          top_p: 0.9,
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        let errorText = "Unknown error";
-        let errorData: any = {};
+    for (const model of modelsToTry) {
+      try {
+        console.log(`Trying model: ${model}`);
         
-        try {
-          errorText = await response.text();
-          errorData = JSON.parse(errorText);
-        } catch (e) {
-          // If parsing fails, use raw text
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://vettcodecli.vercel.app",
+            "X-Title": "VettCode CLI Security Scanner",
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: "system",
+                content: systemPrompt,
+              },
+              ...conversationHistory,
+              {
+                role: "user",
+                content: message,
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 1500,
+            top_p: 0.9,
+          }),
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          clearTimeout(timeoutId);
+          const data = await response.json();
+          const aiResponse =
+            data.choices?.[0]?.message?.content ||
+            "I apologize, but I couldn't generate a response. Please try rephrasing your question.";
+
+          modelUsed = model;
+          console.log(`Success with model: ${model}`);
+
+          return NextResponse.json(
+            {
+              response: aiResponse,
+              model: model,
+            } as ChatResponse,
+            {
+              headers: {
+                "X-RateLimit-Limit": RATE_LIMIT.MAX_REQUESTS.toString(),
+                "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+                "X-RateLimit-Reset": new Date(rateLimit.resetTime).toISOString(),
+              },
+            }
+          );
         }
-        
-        console.error("OpenRouter API error:", {
+
+        // If not OK, store error and try next model
+        const errorData = await response.json().catch(() => ({}));
+        lastError = {
           status: response.status,
-          statusText: response.statusText,
+          model,
+          error: errorData,
+        };
+        console.log(`Model ${model} failed with status ${response.status}`);
+
+        // Don't try other models for auth errors
+        if (response.status === 401) {
+          break;
+        }
+
+        // Continue to next model
+      } catch (fetchError: any) {
+        lastError = { model, error: fetchError.message };
+        console.log(`Model ${model} error:`, fetchError.message);
+        
+        if (fetchError.name === "AbortError") {
+          break;
+        }
+        // Continue to next model
+      }
+    }
+
+    // All models failed, use fallback
+    clearTimeout(timeoutId);
+    console.error("All models failed. Last error:", lastError);
+    
+    const fallbackResponse = generateFallbackResponse(message, report);
+    
+    return NextResponse.json(
+      {
+        response: fallbackResponse,
+      } as ChatResponse,
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("AI Chat error:", error);
+
+    return NextResponse.json(
+      {
+        response:
+          "I encountered an unexpected error. Please try again. If the problem persists, you can review the detailed findings in your report above.",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      } as ChatResponse,
+      { status: 500 }
+    );
+  }
+}
           error: errorText,
           headers: Object.fromEntries(response.headers.entries()),
         });
