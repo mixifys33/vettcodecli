@@ -323,13 +323,13 @@ Ask about vulnerabilities or select an action below.`;
   );
 
   return (
-    <div className="flex flex-col h-70% bg-dark">
+    <div className="flex flex-col h-full bg-dark">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 p-3 flex-shrink-0">
+      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 p-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <Brain className="w-4 h-4 text-purple-400" />
+            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <Brain className="w-5 h-5 text-purple-400" />
             </div>
             <div>
               <h3 className="font-semibold">Report Copilot</h3>
@@ -394,7 +394,7 @@ Ask about vulnerabilities or select an action below.`;
               <motion.button
                 key={idx}
                 onClick={() => handleQuickQuestion(question)}
-                className="w-70% text-left px-2 py-1.5 bg-gray-800/50 hover:bg-purple-500/10 rounded-lg text-sm transition border border-gray-700 hover:border-purple-500/30 group"
+                className="w-full text-left px-2 py-1.5 bg-gray-800/50 hover:bg-purple-500/10 rounded-lg text-sm transition border border-gray-700 hover:border-purple-500/30 group"
                 whileHover={{ scale: 1.01, x: 2 }}
                 whileTap={{ scale: 0.99 }}
               >
