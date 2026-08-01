@@ -278,21 +278,23 @@ function ReportViewerContent() {
       </div>
 
       {/* AI Assistant Panel */}
-      <ResizablePanel
-        isOpen={showAI}
-        onClose={() => setShowAI(false)}
-        side="right"
-        defaultWidth={450}
-        minWidth={350}
-        maxWidth={800}
-      >
-        <AIAssistant
-          report={report}
-          onClose={() => setShowAI(false)}
-          initialMessage={aiInitialMessage}
-          context={aiContext}
-        />
-      </ResizablePanel>
+      <AnimatePresence>
+        {showAI && (
+          <ResizablePanel
+            onClose={() => setShowAI(false)}
+            defaultWidth={450}
+            minWidth={350}
+            maxWidth={800}
+          >
+            <AIAssistant
+              report={report}
+              onClose={() => setShowAI(false)}
+              initialMessage={aiInitialMessage}
+              context={aiContext}
+            />
+          </ResizablePanel>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
