@@ -22,7 +22,9 @@ import {
   Sparkles,
   Cpu,
   Code2,
-  CircleDot
+  CircleDot,
+  Trash2,
+  MessageSquare
 } from "lucide-react";
 
 interface AIAssistantProps {
@@ -207,10 +209,11 @@ Select an action below or ask a specific question about this section.`
 
 Ask about vulnerabilities or select an action below.`;
 
-  const { messages, loading, error, sendMessage, cancelRequest } = useAIChat({
+  const { messages, loading, error, sendMessage, cancelRequest, clearMessages } = useAIChat({
     report,
     initialMessage: welcomeMessage,
     selectedModel,
+    persistKey: `report-${report.projectName || "default"}`, // Persist per project
   });
 
   // Auto-send initial message if provided (for "Ask AI" button clicks)
@@ -259,6 +262,17 @@ Ask about vulnerabilities or select an action below.`;
     },
     [handleSend]
   );
+
+  const handleClearChat = useCallback(() => {
+    if (messages.length <= 1) return; // Don't clear if only welcome message
+    
+    if (confirm("Clear all messages? This cannot be undone.")) {
+      clearMessages();
+      setHasAutoSent(false);
+      setInput("");
+      toast.success("Chat cleared");
+    }
+  }, [messages.length, clearMessages]);
 
   // Context-aware quick actions
   const getContextualActions = () => {
@@ -337,6 +351,29 @@ Ask about vulnerabilities or select an action below.`;
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Message counter - shows when conversation has started */}
+            {messages.length > 1 && (
+              <div 
+                className="text-[10px] px-2 py-1 bg-blue-500/10 border border-blue-500/30 rounded text-blue-300 flex items-center gap-1"
+                title={`${messages.length - 1} messages in conversation (keeping last 5 for context)`}
+              >
+                <MessageSquare className="w-3 h-3" />
+                <span className="hidden sm:inline">{messages.length - 1}</span>
+              </div>
+            )}
+            
+            {/* Clear chat button */}
+            {messages.length > 1 && !loading && (
+              <button
+                onClick={handleClearChat}
+                className="text-xs px-2.5 py-1 bg-gray-700/50 text-gray-300 border border-gray-600 rounded-md hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition flex items-center gap-1.5"
+                title="Clear conversation"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span className="hidden sm:inline">Clear</span>
+              </button>
+            )}
+            
             {loading && (
               <button
                 onClick={cancelRequest}
@@ -486,18 +523,6 @@ Ask about vulnerabilities or select an action below.`;
         
         {/* Compact hint */}
         <div className="text-[10px] text-gray-500 mt-1 flex items-center justify-between px-0.5">
-          <span className="text-gray-600 truncate">{modelDescriptions[selectedModel]}</span>
-          <span className="flex-shrink-0 ml-2">{input.length}/500</span>
-        </div>
-      </div>
-                <Send className="w-4 h-4" />
-              </>
-            )}
-          </motion.button>
-        </div>
-        
-        {/* Subtle hint + character count */}
-        <div className="text-xs text-gray-500 mt-2 flex items-center justify-between px-1">
           <span className="text-gray-600 truncate">{modelDescriptions[selectedModel]}</span>
           <span className="flex-shrink-0 ml-2">{input.length}/500</span>
         </div>

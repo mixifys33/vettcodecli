@@ -5,16 +5,36 @@ interface UseAIChatProps {
   report: any;
   initialMessage?: string;
   selectedModel?: "auto" | "flash" | "deep" | "code" | "core";
+  persistKey?: string; // Optional key for session storage persistence
 }
 
-export function useAIChat({ report, initialMessage, selectedModel = "auto" }: UseAIChatProps) {
+export function useAIChat({ report, initialMessage, selectedModel = "auto", persistKey }: UseAIChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Initialize with welcome message
+  // Load persisted messages on mount
   useEffect(() => {
+    if (persistKey && typeof window !== "undefined") {
+      try {
+        const stored = sessionStorage.getItem(`ai-chat-${persistKey}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Convert timestamp strings back to Date objects
+          const restoredMessages = parsed.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp),
+          }));
+          setMessages(restoredMessages);
+          return; // Skip initial message if we have persisted data
+        }
+      } catch (err) {
+        console.error("Failed to load persisted chat:", err);
+      }
+    }
+
+    // Initialize with welcome message only if no persisted data
     if (initialMessage) {
       setMessages([
         {
@@ -25,7 +45,18 @@ export function useAIChat({ report, initialMessage, selectedModel = "auto" }: Us
         },
       ]);
     }
-  }, [initialMessage]);
+  }, [persistKey]); // Only run on mount
+
+  // Persist messages to session storage when they change
+  useEffect(() => {
+    if (persistKey && typeof window !== "undefined" && messages.length > 0) {
+      try {
+        sessionStorage.setItem(`ai-chat-${persistKey}`, JSON.stringify(messages));
+      } catch (err) {
+        console.error("Failed to persist chat:", err);
+      }
+    }
+  }, [messages, persistKey]);
 
   const generateMessageId = () => {
     return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -128,7 +159,16 @@ export function useAIChat({ report, initialMessage, selectedModel = "auto" }: Us
   const clearMessages = useCallback(() => {
     setMessages([]);
     setError(null);
-  }, []);
+    
+    // Clear persisted data if persistence is enabled
+    if (persistKey && typeof window !== "undefined") {
+      try {
+        sessionStorage.removeItem(`ai-chat-${persistKey}`);
+      } catch (err) {
+        console.error("Failed to clear persisted chat:", err);
+      }
+    }
+  }, [persistKey]);
 
   const cancelRequest = useCallback(() => {
     if (abortControllerRef.current) {
