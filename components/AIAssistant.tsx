@@ -124,21 +124,26 @@ export default function AIAssistant({ report, onClose, initialMessage }: AIAssis
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Generate initial welcome message
-  const welcomeMessage = `Hi! 👋 I'm your AI security assistant powered by **Gemma 2**.
+  const welcomeMessage = `Hey there! 👋 I'm your AI security assistant, here to help you understand and fix the issues in your code.
 
-I've analyzed your report for **${report.projectName}**:
-- **${report.findings.length}** total security issues found
-- Score: **${report.score}/100** (Grade: **${report.grade}**)
-- Critical: **${report.findings.filter((f: any) => f.severity === "critical").length}** | High: **${report.findings.filter((f: any) => f.severity === "high").length}** | Medium: **${report.findings.filter((f: any) => f.severity === "medium").length}** | Low: **${report.findings.filter((f: any) => f.severity === "low").length}**
+I've just reviewed the scan for **${report.projectName}**, and here's what I found:
 
-**I can help you with:**
-- Understanding specific vulnerabilities in detail
-- Providing fix recommendations with code examples
-- Explaining security impact and risk levels
-- Suggesting prevention strategies and best practices
-- Prioritizing remediation efforts
+📊 **Quick Stats:**
+- Overall Security Score: **${report.score}/100** (Grade: ${report.grade})
+- Total Issues: **${report.findings.length}**
+  - 🔴 Critical: ${report.findings.filter((f: any) => f.severity === "critical").length}
+  - 🟠 High: ${report.findings.filter((f: any) => f.severity === "high").length}
+  - 🟡 Medium: ${report.findings.filter((f: any) => f.severity === "medium").length}
+  - 🔵 Low: ${report.findings.filter((f: any) => f.severity === "low").length}
 
-Ask me anything about your security report!`;
+**I'm here to help you with:**
+- Understanding what each vulnerability means and why it matters
+- Providing step-by-step fixes with code examples
+- Prioritizing which issues to tackle first
+- Explaining security concepts in plain English
+- Suggesting best practices to prevent future issues
+
+Don't worry if this feels overwhelming - we'll tackle it together! What would you like to know?`;
 
   const { messages, loading, error, sendMessage, cancelRequest } = useAIChat({
     report,
@@ -212,7 +217,7 @@ Ask me anything about your security report!`;
             </div>
             <div>
               <h3 className="font-semibold">AI Security Assistant</h3>
-              <p className="text-xs text-gray-400">Powered by Gemini via OpenRouter</p>
+              <p className="text-xs text-gray-400">Powered by AI · Ask me anything</p>
             </div>
           </div>
           {loading && (
