@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.2",
     "google-auth-library": "^9.6.3",
     "react-hot-toast": "^2.4.1",
+    "sonner": "^1.4.0",
     "react-markdown": "^9.0.1",
     "remark-gfm": "^4.0.0",
     "react-syntax-highlighter": "^15.5.0",

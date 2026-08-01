@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { isAuthenticated, getDeveloper, getApiUrl, API_CONFIG } from "@/lib/api-config";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from "sonner";
 import DashboardLayout from "@/components/DashboardLayout";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface ScanReport {
   id: string;
@@ -30,6 +31,12 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'critical' | 'high' | 'passed'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'score' | 'name'>('date');
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    reportId: string;
+    projectName: string;
+  }>({ isOpen: false, reportId: '', projectName: '' });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -72,11 +79,13 @@ export default function ReportsPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!confirm(`Are you sure you want to delete the report for "${projectName}"?\n\nThis will permanently delete:\n• The report from the database\n• The report file from storage\n\nThis action cannot be undone.`)) {
-      return;
-    }
+    // Open confirmation modal
+    setDeleteModal({ isOpen: true, reportId, projectName });
+  };
 
-    const deleteToast = toast.loading("Deleting report...");
+  const confirmDelete = async () => {
+    const { reportId, projectName } = deleteModal;
+    setIsDeleting(true);
 
     try {
       const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.TOKEN);
@@ -97,20 +106,32 @@ export default function ReportsPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          toast.error("Session expired. Please log in again.", { id: deleteToast });
+          toast.error("Session expired. Please log in again.");
+          setDeleteModal({ isOpen: false, reportId: '', projectName: '' });
+          setIsDeleting(false);
           router.push("/login");
           return;
         }
         throw new Error(data.error || "Failed to delete report");
       }
 
-      toast.success("Report deleted successfully", { id: deleteToast });
+      // Success
+      toast.success(`"${projectName}" deleted successfully`, {
+        description: "The report has been permanently removed",
+      });
       
-      // Remove from local state immediately for better UX
+      // Remove from local state immediately
       setReports(prevReports => prevReports.filter(r => r.id !== reportId));
+      
+      // Close modal
+      setDeleteModal({ isOpen: false, reportId: '', projectName: '' });
     } catch (error: any) {
       console.error("Delete error:", error);
-      toast.error(error.message || "Failed to delete report", { id: deleteToast });
+      toast.error("Failed to delete report", {
+        description: error.message || "Please try again later",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -141,7 +162,9 @@ export default function ReportsPage() {
     // Fallback to clipboard
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success("Report link copied to clipboard!");
+      toast.success("Link copied to clipboard!", {
+        description: "Share this link to give others access to the report",
+      });
     } catch (error) {
       // Final fallback: show prompt
       const textarea = document.createElement('textarea');
@@ -153,7 +176,7 @@ export default function ReportsPage() {
       
       try {
         document.execCommand('copy');
-        toast.success("Report link copied to clipboard!");
+        toast.success("Link copied to clipboard!");
       } catch (err) {
         // Last resort: show alert with URL
         alert(`Share this report:\n\n${shareUrl}`);
@@ -218,7 +241,18 @@ export default function ReportsPage() {
 
   return (
     <DashboardLayout developer={developer}>
-      <Toaster position="top-center" />
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => !isDeleting && setDeleteModal({ isOpen: false, reportId: '', projectName: '' })}
+        onConfirm={confirmDelete}
+        title="Delete Report?"
+        message={`Are you sure you want to delete the report for "${deleteModal.projectName}"?\n\nThis will permanently delete:\n• The report from the database\n• The report file from storage\n\nThis action cannot be undone.`}
+        confirmText="Delete Report"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+      />
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
