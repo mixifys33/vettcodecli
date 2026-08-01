@@ -1,4 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import ImageKit from "imagekit";
+
+// Initialize ImageKit
+const imagekit = new ImageKit({
+  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "",
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
+  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
+});
 
 /**
  * GET /api/reports/[id]
@@ -86,6 +94,63 @@ export async function GET(
     console.error("[Report Fetch] Error:", error);
     return NextResponse.json(
       { error: "Failed to load report", details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/reports/[id]
+ * Delete report from ImageKit
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const reportId = params.id;
+    
+    if (!reportId || !reportId.startsWith("report_")) {
+      return NextResponse.json(
+        { error: "Invalid report ID" },
+        { status: 400 }
+      );
+    }
+
+    console.log('[Report Delete] Attempting to delete:', reportId);
+
+    // Get file path
+    const filePath = `vettcode-reports/${reportId}.json`;
+    
+    // List files to get fileId
+    const files = await imagekit.listFiles({
+      path: "/vettcode-reports",
+      searchQuery: `name="${reportId}.json"`,
+    });
+
+    if (!files || files.length === 0) {
+      console.log('[Report Delete] Report not found in ImageKit');
+      return NextResponse.json(
+        { error: "Report not found" },
+        { status: 404 }
+      );
+    }
+
+    const fileId = files[0].fileId;
+
+    // Delete from ImageKit
+    await imagekit.deleteFile(fileId);
+
+    console.log('[Report Delete] Successfully deleted report:', reportId);
+
+    return NextResponse.json({
+      success: true,
+      message: "Report deleted successfully",
+    });
+  } catch (error) {
+    console.error("[Report Delete] Error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete report", details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

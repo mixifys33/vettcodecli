@@ -68,6 +68,56 @@ export default function ReportsPage() {
     }
   };
 
+  const handleDeleteReport = async (reportId: string, projectName: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm(`Are you sure you want to delete the report for "${projectName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    const deleteToast = toast.loading("Deleting report...");
+
+    try {
+      const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.TOKEN);
+      const response = await fetch(getApiUrl(`/api/reports/${reportId}`), {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete report");
+      }
+
+      toast.success("Report deleted successfully", { id: deleteToast });
+      
+      // Refresh reports list
+      fetchReports();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete report", { id: deleteToast });
+    }
+  };
+
+  const handleShareReport = async (reportId: string, projectName: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const shareUrl = `${window.location.origin}/reports/${reportId}`;
+
+    // Copy to clipboard
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Report link copied to clipboard!");
+    } catch (error) {
+      // Fallback: show the URL in a prompt
+      prompt("Copy this link to share the report:", shareUrl);
+    }
+  };
+
   const getGradeColor = (grade: string) => {
     switch (grade.toUpperCase()) {
       case 'A': return 'text-green-400 bg-green-500/20 border-green-500/30';
@@ -298,10 +348,11 @@ export default function ReportsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + index * 0.05 }}
+                className="relative group"
               >
                 <Link
                   href={`/reports/${report.id}`}
-                  className="block bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-xl border border-primary/20 p-6 hover:border-primary/40 transition group"
+                  className="block bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-xl border border-primary/20 p-6 hover:border-primary/40 transition"
                 >
                   <div className="flex items-start justify-between gap-4">
                     {/* Left Section */}
@@ -381,6 +432,33 @@ export default function ReportsPage() {
                     </div>
                   </div>
                 </Link>
+
+                {/* Action Buttons - Hover overlay */}
+                <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Share Button */}
+                  <button
+                    onClick={(e) => handleShareReport(report.id, report.projectName, e)}
+                    className="px-3 py-2 bg-blue-500/90 hover:bg-blue-600 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium shadow-lg backdrop-blur-sm"
+                    title="Share report"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    Share
+                  </button>
+
+                  {/* Delete Button */}
+                  <button
+                    onClick={(e) => handleDeleteReport(report.id, report.projectName, e)}
+                    className="px-3 py-2 bg-red-500/90 hover:bg-red-600 text-white rounded-lg transition flex items-center gap-2 text-sm font-medium shadow-lg backdrop-blur-sm"
+                    title="Delete report"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
