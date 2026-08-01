@@ -151,19 +151,49 @@ function buildReportContext(report: ChatRequest["report"]): string {
     )
     .join("\n");
 
-  return `
-Project: ${report.projectName}
-Security Score: ${report.score}/100 (Grade: ${report.grade})
+  // Include blueprint context if available
+  let blueprintContext = "";
+  if ((report as any).blueprint) {
+    const blueprint = (report as any).blueprint;
+    const meta = blueprint.meta || {};
+    const entryPoints = blueprint.entryPoints?.slice(0, 5) || [];
+    const riskSurface = blueprint.riskSurface?.slice(0, 10) || [];
+    const hotspots = blueprint.hotspots?.slice(0, 5) || [];
+    
+    blueprintContext = `
 
-Total Issues: ${report.findings.length}
+**Project Architecture (Blueprint):**
+- Total Files: ${meta.totalFiles || 0}
+- Total Modules: ${meta.totalModules || 0}
+- Entry Points: ${meta.entryPoints || 0}
+- External Calls: ${meta.externalCalls || 0}
+
+**Entry Points (Attack Surface):**
+${entryPoints.map((ep: any) => `  - ${ep.type}: ${ep.name}${ep.method ? ` [${ep.method}]` : ""} in ${ep.file}`).join("\n") || "  None identified"}
+
+**High-Risk Areas:**
+${riskSurface.map((r: any) => `  - ${r.file} (Risk Score: ${r.score}, Tags: ${r.tags.join(", ")})`).join("\n") || "  None identified"}
+
+**Hotspots (Highly Connected/Complex):**
+${hotspots.map((h: any) => `  - ${h.file} (${h.connections} connections, complexity ${h.complexity})`).join("\n") || "  None identified"}
+
+**Note:** Use this architectural context to provide more targeted security advice based on how the code is structured and where the entry points are.`;
+  }
+
+  return `Project: ${report.projectName || "Unknown"}
+Score: ${report.score}/100 (Grade: ${report.grade || "N/A"})
+Total Findings: ${report.findings.length}
 - Critical: ${criticalCount}
 - High: ${highCount}
 - Medium: ${mediumCount}
 - Low: ${lowCount}
+${blueprintContext}
 
-Top Priority Issues:
-${topIssues}
-`;
+**Top Issues:**
+${topIssues || "None"}
+
+**Executive Summary:**
+${report.executiveVerdict || "No summary available"}`;
 }
 
 export async function POST(req: NextRequest) {
