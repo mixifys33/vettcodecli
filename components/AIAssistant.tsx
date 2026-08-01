@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 
 interface AIAssistantProps {
   report: any;
+  onClose?: () => void;
 }
 
 // Message bubble component
@@ -108,8 +109,9 @@ const LoadingIndicator = memo(() => (
 
 LoadingIndicator.displayName = "LoadingIndicator";
 
-export default function AIAssistant({ report }: AIAssistantProps) {
+export default function AIAssistant({ report, onClose }: AIAssistantProps) {
   const [input, setInput] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -192,11 +194,7 @@ Ask me anything about your security report!`;
   );
 
   return (
-    <motion.div
-      className="bg-dark border border-gray-800 rounded-xl overflow-hidden flex flex-col h-[calc(100vh-12rem)] sticky top-24"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
+    <div className="flex flex-col h-full bg-dark">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 p-4 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -206,7 +204,7 @@ Ask me anything about your security report!`;
             </div>
             <div>
               <h3 className="font-semibold">AI Security Assistant</h3>
-              <p className="text-xs text-gray-400">Powered by Gemma 2 via OpenRouter</p>
+              <p className="text-xs text-gray-400">Powered by Gemini via OpenRouter</p>
             </div>
           </div>
           {loading && (
@@ -306,6 +304,6 @@ Ask me anything about your security report!`;
           <span>{input.length}/500</span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

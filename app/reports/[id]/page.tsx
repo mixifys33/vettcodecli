@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import HierarchicalReportViewer from "@/components/HierarchicalReportViewer";
 import CompactReportHeader from "@/components/CompactReportHeader";
 import AIAssistant from "@/components/AIAssistant";
+import ResizablePanel from "@/components/ResizablePanel";
 import { useReportFilters } from "@/hooks/useReportFilters";
 
 interface Report {
@@ -217,9 +218,9 @@ export default function ReportPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className={showAI ? "" : ""}>
           {/* Report Content */}
-          <div className={showAI ? "lg:col-span-2" : "lg:col-span-3"}>
+          <div>
             <HierarchicalReportViewer 
               report={report}
               searchQuery={searchQuery}
@@ -229,25 +230,25 @@ export default function ReportPage() {
               hideHeader={isScrolled}
             />
           </div>
-
-          {/* AI Assistant Sidebar */}
-          <AnimatePresence>
-            {showAI && (
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 50 }}
-                className="lg:col-span-1"
-              >
-                <AIAssistant report={report} />
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
 
+      {/* AI Assistant Resizable Panel */}
+      <AnimatePresence>
+        {showAI && (
+          <ResizablePanel
+            defaultWidth={450}
+            minWidth={350}
+            maxWidth={900}
+            onClose={() => setShowAI(false)}
+          >
+            <AIAssistant report={report} onClose={() => setShowAI(false)} />
+          </ResizablePanel>
+        )}
+      </AnimatePresence>
+
       {/* Expiration Notice */}
-      <div className="fixed bottom-2 right-2 bg-dark border border-yellow-500/30 rounded-lg p-2 max-w-sm">
+      <div className={`fixed bottom-4 ${showAI ? "right-[470px]" : "right-4"} bg-dark border border-yellow-500/30 rounded-lg p-3 max-w-sm transition-all duration-300 z-30`}>
         <div className="flex items-start gap-3">
           <span className="text-yellow-500">⏰</span>
           <div className="text-sm">
