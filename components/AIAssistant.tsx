@@ -124,26 +124,11 @@ export default function AIAssistant({ report, onClose, initialMessage }: AIAssis
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Generate initial welcome message
-  const welcomeMessage = `Hey there! 👋 I'm your AI security assistant, here to help you understand and fix the issues in your code.
+  const welcomeMessage = `👋 Hi! I'm here to help you fix security issues in **${report.projectName}**.
 
-I've just reviewed the scan for **${report.projectName}**, and here's what I found:
+**Score: ${report.score}/100** • ${report.findings.length} issues found (${report.findings.filter((f: any) => f.severity === "critical").length} critical, ${report.findings.filter((f: any) => f.severity === "high").length} high)
 
-📊 **Quick Stats:**
-- Overall Security Score: **${report.score}/100** (Grade: ${report.grade})
-- Total Issues: **${report.findings.length}**
-  - 🔴 Critical: ${report.findings.filter((f: any) => f.severity === "critical").length}
-  - 🟠 High: ${report.findings.filter((f: any) => f.severity === "high").length}
-  - 🟡 Medium: ${report.findings.filter((f: any) => f.severity === "medium").length}
-  - 🔵 Low: ${report.findings.filter((f: any) => f.severity === "low").length}
-
-**I'm here to help you with:**
-- Understanding what each vulnerability means and why it matters
-- Providing step-by-step fixes with code examples
-- Prioritizing which issues to tackle first
-- Explaining security concepts in plain English
-- Suggesting best practices to prevent future issues
-
-Don't worry if this feels overwhelming - we'll tackle it together! What would you like to know?`;
+Ask me anything about your vulnerabilities!`;
 
   const { messages, loading, error, sendMessage, cancelRequest } = useAIChat({
     report,
