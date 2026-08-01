@@ -129,8 +129,8 @@ function validateChatRequest(body: any): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// Build report context
-function buildReportContext(report: ChatRequest["report"]): string {
+// Build report context with enhanced file-specific information
+function buildReportContext(report: ChatRequest["report"], focusFile?: string): string {
   const criticalCount = report.findings.filter((f) => f.severity === "critical").length;
   const highCount = report.findings.filter((f) => f.severity === "high").length;
   const mediumCount = report.findings.filter((f) => f.severity === "medium").length;
@@ -151,49 +151,138 @@ function buildReportContext(report: ChatRequest["report"]): string {
     )
     .join("\n");
 
-  // Include blueprint context if available
-  let blueprintContext = "";
-  if ((report as any).blueprint) {
-    const blueprint = (report as any).blueprint;
-    const meta = blueprint.meta || {};
-    const entryPoints = blueprint.entryPoints?.slice(0, 5) || [];
-    const riskSurface = blueprint.riskSurface?.slice(0, 10) || [];
-    const hotspots = blueprint.hotspots?.slice(0, 5) || [];
-    
-    blueprintContext = `
-
-**Project Architecture (Blueprint):**
-- Total Files: ${meta.totalFiles || 0}
-- Total Modules: ${meta.totalModules || 0}
-- Entry Points: ${meta.entryPoints || 0}
-- External Calls: ${meta.externalCalls || 0}
-
-**Entry Points (Attack Surface):**
-${entryPoints.map((ep: any) => `  - ${ep.type}: ${ep.name}${ep.method ? ` [${ep.method}]` : ""} in ${ep.file}`).join("\n") || "  None identified"}
-
-**High-Risk Areas:**
-${riskSurface.map((r: any) => `  - ${r.file} (Risk Score: ${r.score}, Tags: ${r.tags.join(", ")})`).join("\n") || "  None identified"}
-
-**Hotspots (Highly Connected/Complex):**
-${hotspots.map((h: any) => `  - ${h.file} (${h.connections} connections, complexity ${h.complexity})`).join("\n") || "  None identified"}
-
-**Note:** Use this architectural context to provide more targeted security advice based on how the code is structured and where the entry points are.`;
-  }
-
-  return `Project: ${report.projectName || "Unknown"}
+  let contextString = `Project: ${report.projectName || "Unknown"}
 Score: ${report.score}/100 (Grade: ${report.grade || "N/A"})
 Total Findings: ${report.findings.length}
 - Critical: ${criticalCount}
 - High: ${highCount}
 - Medium: ${mediumCount}
 - Low: ${lowCount}
-${blueprintContext}
 
 **Top Issues:**
 ${topIssues || "None"}
 
 **Executive Summary:**
 ${(report as any).executiveVerdict || "No summary available"}`;
+
+  // Include blueprint context if available
+  if ((report as any).blueprint) {
+    const blueprint = (report as any).blueprint;
+    const meta = blueprint.meta || {};
+    
+    contextString += `
+
+**Project Architecture (Blueprint):**
+- Total Files: ${meta.totalFiles || 0}
+- Total Modules: ${meta.totalModules || 0}
+- Entry Points: ${meta.entryPoints || 0}
+- External Calls: ${meta.externalCalls || 0}`;
+
+    // Add focused file context if specified
+    if (focusFile && blueprint) {
+      contextString += `
+
+**FOCUSED FILE ANALYSIS: ${focusFile}**`;
+
+      // Find risk information for this file
+      const fileRisk = blueprint.riskSurface?.find((r: any) => r.file === focusFile);
+      if (fileRisk) {
+        contextString += `
+- Risk Score: ${fileRisk.score}/100
+- Risk Tags: ${fileRisk.tags.join(", ")}
+- Risk Reasons: ${fileRisk.reasons.join("; ")}`;
+      }
+
+      // Find dependencies (incoming and outgoing)
+      const outgoingDeps = blueprint.dependencies?.edges?.filter((e: any) => e.from === focusFile) || [];
+      const incomingDeps = blueprint.dependencies?.edges?.filter((e: any) => e.to === focusFile) || [];
+      
+      if (outgoingDeps.length > 0 || incomingDeps.length > 0) {
+        contextString += `
+
+**File Dependencies:**`;
+        
+        if (outgoingDeps.length > 0) {
+          contextString += `
+- Imports from: ${outgoingDeps.map((e: any) => e.to).slice(0, 10).join(", ")}`;
+        }
+        
+        if (incomingDeps.length > 0) {
+          contextString += `
+- Imported by: ${incomingDeps.map((e: any) => e.from).slice(0, 10).join(", ")}`;
+        }
+      }
+
+      // Find functions in this file
+      const fileFunctions = blueprint.functions?.filter((f: any) => f.file === focusFile) || [];
+      if (fileFunctions.length > 0) {
+        contextString += `
+- Functions: ${fileFunctions.slice(0, 15).map((f: any) => `${f.name}(${f.exported ? "exported" : "internal"})`).join(", ")}`;
+      }
+
+      // Find external calls from this file
+      const fileExternalCalls = blueprint.externalCalls?.filter((c: any) => c.file === focusFile) || [];
+      if (fileExternalCalls.length > 0) {
+        const callsByType = fileExternalCalls.reduce((acc: any, call: any) => {
+          acc[call.type] = (acc[call.type] || 0) + 1;
+          return acc;
+        }, {});
+        contextString += `
+- External Calls: ${Object.entries(callsByType).map(([type, count]) => `${count} ${type}`).join(", ")}`;
+      }
+
+      // Find call flows involving this file
+      const fileFlows = blueprint.flows?.filter((f: any) => f.file === focusFile) || [];
+      if (fileFlows.length > 0) {
+        contextString += `
+- Call Flows: ${fileFlows.length} internal function calls`;
+      }
+
+      // Find specific findings for this file
+      const fileFindings = report.findings.filter((f: any) => f.file === focusFile);
+      if (fileFindings.length > 0) {
+        contextString += `
+
+**Vulnerabilities in ${focusFile}:**`;
+        fileFindings.slice(0, 10).forEach((finding: any, idx: number) => {
+          contextString += `
+${idx + 1}. [${finding.severity.toUpperCase()}] ${finding.title}${finding.description ? `: ${finding.description}` : ""}`;
+        });
+      }
+    } else {
+      // General blueprint context
+      const entryPoints = blueprint.entryPoints?.slice(0, 5) || [];
+      const riskSurface = blueprint.riskSurface?.slice(0, 10) || [];
+      const hotspots = blueprint.hotspots?.slice(0, 5) || [];
+      
+      if (entryPoints.length > 0) {
+        contextString += `
+
+**Entry Points (Attack Surface):**
+${entryPoints.map((ep: any) => `  - ${ep.type}: ${ep.name}${ep.method ? ` [${ep.method}]` : ""} in ${ep.file}`).join("\n")}`;
+      }
+
+      if (riskSurface.length > 0) {
+        contextString += `
+
+**High-Risk Areas:**
+${riskSurface.map((r: any) => `  - ${r.file} (Risk Score: ${r.score}, Tags: ${r.tags.join(", ")})`).join("\n")}`;
+      }
+
+      if (hotspots.length > 0) {
+        contextString += `
+
+**Hotspots (Highly Connected/Complex):**
+${hotspots.map((h: any) => `  - ${h.file} (${h.connections} connections, complexity ${h.complexity})`).join("\n")}`;
+      }
+    }
+
+    contextString += `
+
+**Context Usage Note:** Use this architectural context to provide more targeted security advice based on how the code is structured, file dependencies, and where the entry points are.`;
+  }
+
+  return contextString;
 }
 
 export async function POST(req: NextRequest) {
@@ -229,8 +318,12 @@ export async function POST(req: NextRequest) {
 
     const { message, report, history } = body;
 
-    // Build context
-    const reportContext = buildReportContext(report);
+    // Extract focused file from message if present
+    const focusFileMatch = message.match(/(?:in|for|about)\s+([a-zA-Z0-9_\-./\\]+\.[a-zA-Z0-9]+)/i);
+    const focusFile = focusFileMatch ? focusFileMatch[1] : undefined;
+
+    // Build context with file-specific information if available
+    const reportContext = buildReportContext(report, focusFile);
 
     // Build conversation history (limit to last 8 messages for better context)
     const conversationHistory = history

@@ -60,6 +60,8 @@ export function useAIChat({ report, initialMessage }: UseAIChatProps) {
             score: report.score,
             grade: report.grade,
             findings: report.findings,
+            // Include full blueprint if available
+            ...(report.blueprint && { blueprint: report.blueprint }),
           },
           history: messages.slice(-5).map((msg) => ({
             role: msg.role,
