@@ -161,16 +161,16 @@ export default function AIAssistant({ report, onClose, initialMessage, context }
 
   // Generate initial welcome message based on context
   const welcomeMessage = context?.section
-    ? `📍 **Viewing:** ${context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}
+    ? `📍 **${context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}**
 
-${generateInsight()}
+**${report.projectName}** • Score: ${report.score}/100 • ${report.findings.length} issues
 
-**Select an action below or ask a specific question about this section.**`
-    : `**Report Analysis:** ${report.projectName}
+Select an action below or ask a specific question about this section.`
+    : `**${report.projectName}**
 
 **Score:** ${report.score}/100 (Grade ${report.grade}) • **${report.findings.length} issues** (${report.findings.filter((f: any) => f.severity === "critical").length} critical, ${report.findings.filter((f: any) => f.severity === "high").length} high)
 
-${generateInsight()}`;
+Ask about vulnerabilities or select an action below.`;
 
   const { messages, loading, error, sendMessage, cancelRequest } = useAIChat({
     report,
@@ -270,7 +270,7 @@ ${generateInsight()}`;
     <div className="flex flex-col h-full bg-dark">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 p-4 flex-shrink-0">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
               <span className="text-2xl">🧠</span>
@@ -292,10 +292,10 @@ ${generateInsight()}`;
 
         {/* Context Indicator */}
         {context?.section && (
-          <div className="flex items-center gap-2 text-xs bg-blue-500/10 border border-blue-500/30 rounded px-3 py-1.5">
+          <div className="flex items-center gap-2 text-xs bg-blue-500/10 border border-blue-500/30 rounded px-3 py-1.5 mt-3">
             <span className="text-blue-400">📍</span>
             <span className="text-blue-300 font-medium">
-              Viewing: {context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}
+              {context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}
             </span>
             {context.focusItem && (
               <span className="text-gray-400">
@@ -304,17 +304,6 @@ ${generateInsight()}`;
             )}
           </div>
         )}
-
-        {/* Insight Banner */}
-        <div className="mt-3 bg-purple-900/20 border border-purple-500/20 rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <span className="text-purple-400 mt-0.5">💡</span>
-            <div className="flex-1">
-              <div className="text-xs font-semibold text-purple-300 mb-1">Insight</div>
-              <div className="text-xs text-gray-300 leading-relaxed">{generateInsight()}</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Messages */}

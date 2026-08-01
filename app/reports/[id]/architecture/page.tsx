@@ -87,6 +87,45 @@ export default function ArchitecturePage() {
   const [aiContext, setAiContext] = useState<string | null>(null);
   const [fullReport, setFullReport] = useState<any>(null);
 
+  // Generate intelligent insight based on architecture data
+  const generateInsight = () => {
+    if (!blueprint) return null;
+
+    const { meta, riskSurface, entryPoints, externalCalls } = blueprint;
+    const highRiskFiles = riskSurface?.filter((r: any) => r.score >= 70).length || 0;
+    const entryPointCount = meta?.entryPoints || 0;
+    const externalCallCount = meta?.externalCalls || 0;
+
+    // Generate intelligent insights based on data
+    if (externalCallCount > 30 && entryPointCount < 5) {
+      return {
+        type: "warning",
+        message: `High external call volume (${externalCallCount}) with limited entry point visibility (${entryPointCount}). This may indicate hidden execution paths or incomplete routing analysis.`
+      };
+    }
+
+    if (highRiskFiles > 10) {
+      return {
+        type: "critical",
+        message: `${highRiskFiles} high-risk files identified. Focus on authentication, database access, and external API integration points.`
+      };
+    }
+
+    if (entryPointCount > 20) {
+      return {
+        type: "info",
+        message: `Large attack surface detected with ${entryPointCount} entry points. Review API exposure and access controls.`
+      };
+    }
+
+    return {
+      type: "success",
+      message: `Architecture analysis complete. ${meta?.totalFiles || 0} files scanned, ${entryPointCount} entry points detected.`
+    };
+  };
+
+  const insight = generateInsight();
+
   useEffect(() => {
     async function fetchReport() {
       try {
@@ -185,6 +224,49 @@ What security concerns should I be aware of for this file, and what specific ste
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        {/* Insight Banner */}
+        {insight && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`rounded-xl border p-5 ${
+              insight.type === "critical"
+                ? "bg-red-900/20 border-red-500/30"
+                : insight.type === "warning"
+                ? "bg-orange-900/20 border-orange-500/30"
+                : insight.type === "success"
+                ? "bg-green-900/20 border-green-500/30"
+                : "bg-blue-900/20 border-blue-500/30"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className={`mt-0.5 ${
+                insight.type === "critical" ? "text-red-400" :
+                insight.type === "warning" ? "text-orange-400" :
+                insight.type === "success" ? "text-green-400" :
+                "text-blue-400"
+              }`}>
+                {insight.type === "critical" ? "⚠️" :
+                 insight.type === "warning" ? "💡" :
+                 insight.type === "success" ? "✅" : "🧠"}
+              </div>
+              <div className="flex-1">
+                <div className={`text-sm font-semibold mb-1 ${
+                  insight.type === "critical" ? "text-red-300" :
+                  insight.type === "warning" ? "text-orange-300" :
+                  insight.type === "success" ? "text-green-300" :
+                  "text-blue-300"
+                }`}>
+                  {insight.type === "critical" ? "Critical Insight" :
+                   insight.type === "warning" ? "Architecture Insight" :
+                   insight.type === "success" ? "Analysis Complete" : "Key Finding"}
+                </div>
+                <div className="text-sm text-gray-300 leading-relaxed">{insight.message}</div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Overview Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
