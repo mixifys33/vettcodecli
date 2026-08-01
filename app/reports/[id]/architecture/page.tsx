@@ -295,7 +295,12 @@ export default function ArchitecturePage() {
 }
 
 // Stat Card Component
-function StatCard({ icon, label, value, color }: any) {
+function StatCard({ icon, label, value, color }: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  color: 'blue' | 'green' | 'purple' | 'yellow';
+}) {
   const colors = {
     blue: "from-blue-500/20 to-blue-600/20 border-blue-500/30",
     green: "from-green-500/20 to-green-600/20 border-green-500/30",
@@ -326,7 +331,12 @@ function StatCard({ icon, label, value, color }: any) {
 }
 
 // Section Component
-function Section({ title, subtitle, icon, children }: any) {
+function Section({ title, subtitle, icon, children }: {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -346,7 +356,7 @@ function Section({ title, subtitle, icon, children }: any) {
 }
 
 // Entry Point Card
-function EntryPointCard({ entryPoint }: any) {
+function EntryPointCard({ entryPoint }: { entryPoint: any }) {
   const typeColors = {
     route: "bg-blue-500/20 text-blue-400 border-blue-500/30",
     controller: "bg-green-500/20 text-green-400 border-green-500/30",
@@ -375,7 +385,7 @@ function EntryPointCard({ entryPoint }: any) {
 }
 
 // Risk Card
-function RiskCard({ risk, rank }: any) {
+function RiskCard({ risk, rank }: { risk: any; rank: number }) {
   const getRiskColor = (score: number) => {
     if (score >= 80) return "text-red-500 bg-red-500/20 border-red-500/30";
     if (score >= 60) return "text-orange-500 bg-orange-500/20 border-orange-500/30";
@@ -419,7 +429,7 @@ function RiskCard({ risk, rank }: any) {
 }
 
 // Hotspot Card
-function HotspotCard({ hotspot }: any) {
+function HotspotCard({ hotspot }: { hotspot: any }) {
   return (
     <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 hover:border-red-500/50 transition-colors">
       <div className="font-mono text-sm text-white mb-3">{hotspot.file}</div>
@@ -442,7 +452,7 @@ function HotspotCard({ hotspot }: any) {
 }
 
 // External Call Group
-function ExternalCallGroup({ group }: any) {
+function ExternalCallGroup({ group }: { group: any }) {
   const typeIcons = {
     database: <Database className="w-4 h-4" />,
     http: <Globe className="w-4 h-4" />,
@@ -475,7 +485,7 @@ function ExternalCallGroup({ group }: any) {
 }
 
 // Circular Dependency Card
-function CircularDepCard({ cycle }: any) {
+function CircularDepCard({ cycle }: { cycle: string[] }) {
   return (
     <div className="bg-red-900/20 rounded-lg p-4 border border-red-500/30">
       <div className="flex items-start gap-3">
