@@ -86,8 +86,9 @@ export default function ArchitecturePage() {
         
         const data = await response.json();
         
-        if (data.blueprint) {
-          setBlueprint(data.blueprint);
+        // The API returns { report: {..., blueprint: {...}} }
+        if (data.report?.blueprint) {
+          setBlueprint(data.report.blueprint);
         } else {
           setError("No architecture data available for this report");
         }
