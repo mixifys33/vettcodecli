@@ -297,6 +297,7 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
 
     // Try multiple FREE models that are actually available (verified Dec 2025)
     const modelsToTry = [
+      "ling-3.0-flash:free",
       "nvidia/nemotron-3-super:free",
       "google/gemma-4-31b-it:free",
       "nvidia/nemotron-3-nano-30b-a3b:free",
