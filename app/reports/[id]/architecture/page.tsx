@@ -357,6 +357,13 @@ What security concerns should I be aware of for this file, and what specific ste
               report={fullReport} 
               onClose={() => setShowAI(false)}
               initialMessage={aiContext || undefined}
+              context={{
+                section: "architecture",
+                focusItem: aiContext ? {
+                  type: "risk",
+                  data: riskSurface?.find((r: any) => aiContext.includes(r.file))
+                } : undefined
+              }}
             />
           </ResizablePanel>
         )}

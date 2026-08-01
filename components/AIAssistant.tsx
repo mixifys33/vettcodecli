@@ -13,6 +13,13 @@ interface AIAssistantProps {
   report: any;
   onClose?: () => void;
   initialMessage?: string;
+  context?: {
+    section?: string; // "architecture" | "risk-surface" | "findings" | "overview"
+    focusItem?: {
+      type: string; // "file" | "node" | "risk" | "finding"
+      data: any;
+    };
+  };
 }
 
 // Message bubble component
@@ -110,7 +117,7 @@ const LoadingIndicator = memo(() => (
 
 LoadingIndicator.displayName = "LoadingIndicator";
 
-export default function AIAssistant({ report, onClose, initialMessage }: AIAssistantProps) {
+export default function AIAssistant({ report, onClose, initialMessage, context }: AIAssistantProps) {
   const [input, setInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -123,12 +130,47 @@ export default function AIAssistant({ report, onClose, initialMessage }: AIAssis
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Generate initial welcome message
-  const welcomeMessage = `👋 Hi! I'm here to help you fix security issues in **${report.projectName}**.
+  // Generate context-aware insight
+  const generateInsight = () => {
+    const blueprint = (report as any).blueprint;
+    
+    if (!blueprint) {
+      return "Security scan analysis complete. Review findings to prioritize remediation efforts.";
+    }
 
-**Score: ${report.score}/100** • ${report.findings.length} issues found (${report.findings.filter((f: any) => f.severity === "critical").length} critical, ${report.findings.filter((f: any) => f.severity === "high").length} high)
+    const { meta, riskSurface, entryPoints, externalCalls } = blueprint;
+    const highRiskFiles = riskSurface?.filter((r: any) => r.score >= 70).length || 0;
+    const entryPointCount = meta?.entryPoints || 0;
+    const externalCallCount = meta?.externalCalls || 0;
 
-Ask me anything about your vulnerabilities!`;
+    // Generate intelligent insights based on data
+    if (externalCallCount > 30 && entryPointCount < 5) {
+      return `High external call volume (${externalCallCount}) with limited entry point visibility (${entryPointCount}). This may indicate hidden execution paths or incomplete routing analysis.`;
+    }
+
+    if (highRiskFiles > 10) {
+      return `${highRiskFiles} high-risk files identified. Focus on authentication, database access, and external API integration points.`;
+    }
+
+    if (report.findings.filter((f: any) => f.severity === "critical").length > 5) {
+      return `Multiple critical vulnerabilities detected. Prioritize fixes for authentication, injection flaws, and data exposure risks.`;
+    }
+
+    return `Analysis complete. ${meta?.totalFiles || 0} files scanned, ${report.findings.length} security issues identified.`;
+  };
+
+  // Generate initial welcome message based on context
+  const welcomeMessage = context?.section
+    ? `📍 **Viewing:** ${context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}
+
+${generateInsight()}
+
+**Select an action below or ask a specific question about this section.**`
+    : `**Report Analysis:** ${report.projectName}
+
+**Score:** ${report.score}/100 (Grade ${report.grade}) • **${report.findings.length} issues** (${report.findings.filter((f: any) => f.severity === "critical").length} critical, ${report.findings.filter((f: any) => f.severity === "high").length} high)
+
+${generateInsight()}`;
 
   const { messages, loading, error, sendMessage, cancelRequest } = useAIChat({
     report,
@@ -173,13 +215,46 @@ Ask me anything about your vulnerabilities!`;
     [handleSend]
   );
 
-  const quickQuestions = [
-    "What are the most critical issues I should fix first?",
-    "How do I fix the SQL injection vulnerabilities?",
-    "Explain the security impact of these findings",
-    "What prevention strategies should I implement?",
-    "Show me code examples for fixing the top issues",
-  ];
+  // Context-aware quick actions
+  const getContextualActions = () => {
+    if (context?.section === "architecture") {
+      return [
+        "Explain the system architecture structure",
+        "What are the main security boundaries?",
+        "Identify weak points in data flow",
+        "Analyze external API exposure risks",
+      ];
+    }
+
+    if (context?.section === "risk-surface") {
+      return [
+        "Why is this file high risk?",
+        "What vulnerabilities should I prioritize?",
+        "Show me fix recommendations",
+        "Explain the security impact",
+      ];
+    }
+
+    if (context?.focusItem?.type === "risk") {
+      const risk = context.focusItem.data;
+      return [
+        `Why does ${risk.file} have a risk score of ${risk.score}?`,
+        `What are the security concerns for this file?`,
+        `How do I reduce risks in ${risk.file}?`,
+        "Show me code examples to fix this",
+      ];
+    }
+
+    // Default actions
+    return [
+      "What are the most critical issues to fix first?",
+      "Explain the top security risks",
+      "Show remediation strategies",
+      "Analyze attack surface exposure",
+    ];
+  };
+
+  const quickQuestions = getContextualActions();
 
   const handleQuickQuestion = useCallback(
     (question: string) => {
@@ -195,14 +270,14 @@ Ask me anything about your vulnerabilities!`;
     <div className="flex flex-col h-full bg-dark">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-purple-500/30 p-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">🤖</span>
+              <span className="text-2xl">🧠</span>
             </div>
             <div>
-              <h3 className="font-semibold">AI Security Assistant</h3>
-              <p className="text-xs text-gray-400">Powered by AI · Ask me anything</p>
+              <h3 className="font-semibold">Report Copilot</h3>
+              <p className="text-xs text-gray-400">Intelligent analysis assistant</p>
             </div>
           </div>
           {loading && (
@@ -213,6 +288,32 @@ Ask me anything about your vulnerabilities!`;
               Cancel
             </button>
           )}
+        </div>
+
+        {/* Context Indicator */}
+        {context?.section && (
+          <div className="flex items-center gap-2 text-xs bg-blue-500/10 border border-blue-500/30 rounded px-3 py-1.5">
+            <span className="text-blue-400">📍</span>
+            <span className="text-blue-300 font-medium">
+              Viewing: {context.section === "architecture" ? "Project Architecture" : context.section === "risk-surface" ? "Risk Surface Analysis" : "Security Report"}
+            </span>
+            {context.focusItem && (
+              <span className="text-gray-400">
+                → {context.focusItem.type === "file" ? context.focusItem.data : context.focusItem.data?.file || "Selected item"}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Insight Banner */}
+        <div className="mt-3 bg-purple-900/20 border border-purple-500/20 rounded-lg p-3">
+          <div className="flex items-start gap-2">
+            <span className="text-purple-400 mt-0.5">💡</span>
+            <div className="flex-1">
+              <div className="text-xs font-semibold text-purple-300 mb-1">Insight</div>
+              <div className="text-xs text-gray-300 leading-relaxed">{generateInsight()}</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -232,17 +333,20 @@ Ask me anything about your vulnerabilities!`;
       {/* Quick Questions */}
       {messages.length <= 1 && !loading && (
         <div className="px-4 pb-4 space-y-2 flex-shrink-0 border-t border-gray-800 pt-4">
-          <div className="text-xs text-gray-500 mb-2 font-semibold">💡 Quick questions:</div>
+          <div className="text-xs text-gray-400 mb-2 font-semibold">⚡ Suggested Actions</div>
           <div className="space-y-2">
             {quickQuestions.map((question, idx) => (
               <motion.button
                 key={idx}
                 onClick={() => handleQuickQuestion(question)}
-                className="w-full text-left px-3 py-2 bg-gray-800/50 hover:bg-gray-700 rounded-lg text-xs transition border border-gray-700 hover:border-primary/30"
-                whileHover={{ scale: 1.02, x: 4 }}
-                whileTap={{ scale: 0.98 }}
+                className="w-full text-left px-3 py-2.5 bg-gray-800/50 hover:bg-purple-500/10 rounded-lg text-xs transition border border-gray-700 hover:border-purple-500/30"
+                whileHover={{ scale: 1.01, x: 2 }}
+                whileTap={{ scale: 0.99 }}
               >
-                {question}
+                <div className="flex items-center gap-2">
+                  <span className="text-purple-400">▸</span>
+                  <span className="text-gray-200">{question}</span>
+                </div>
               </motion.button>
             ))}
           </div>
