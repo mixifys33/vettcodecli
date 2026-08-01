@@ -146,96 +146,97 @@ export default function HierarchicalReportViewer({
             animate={{ opacity: 1, y: 0 }}
             className="bg-dark border border-gray-800 rounded-xl p-4"
           >
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <svg
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search by title, file, category..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-900 text-white border border-gray-800 rounded-lg focus:border-primary focus:outline-none placeholder-gray-500"
-              />
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <svg
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search by title, file, category..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-900 text-white border border-gray-800 rounded-lg focus:border-primary focus:outline-none placeholder-gray-500"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {hasActiveFilters && (
+                  <motion.button
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    onClick={clearFilters}
+                    className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition whitespace-nowrap"
+                  >
+                    Clear Filters
+                  </motion.button>
+                )}
+                <button
+                  onClick={() => {
+                    const allExpanded = severityOrder.every(s => expandedSeverities.has(s));
+                    if (allExpanded) {
+                      setExpandedSeverities(new Set());
+                    } else {
+                      setExpandedSeverities(new Set(severityOrder.filter(s => hierarchy[s])));
+                    }
+                  }}
+                  className="px-6 py-3 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded-lg transition whitespace-nowrap"
+                >
+                  {expandedSeverities.size === Object.keys(hierarchy).length ? "Collapse All" : "Expand All"}
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-2">
-            {hasActiveFilters && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={clearFilters}
-                className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition whitespace-nowrap"
-              >
-                Clear Filters
-              </motion.button>
-            )}
-            <button
-              onClick={() => {
-                const allExpanded = severityOrder.every(s => expandedSeverities.has(s));
-                if (allExpanded) {
-                  setExpandedSeverities(new Set());
-                } else {
-                  setExpandedSeverities(new Set(severityOrder.filter(s => hierarchy[s])));
-                }
-              }}
-              className="px-6 py-3 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded-lg transition whitespace-nowrap"
-            >
-              {expandedSeverities.size === Object.keys(hierarchy).length ? "Collapse All" : "Expand All"}
-            </button>
-          </div>
-        </div>
 
-        {/* Active Filters Display */}
-        {hasActiveFilters && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="mt-4 pt-4 border-t border-gray-800"
-          >
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-gray-500">Active filters:</span>
-              {activeSeverityFilter && (
-                <span className="px-3 py-1 bg-primary/20 text-primary text-sm rounded-full border border-primary/30 flex items-center gap-2">
-                  Severity: {activeSeverityFilter}
-                  <button
-                    onClick={() => setActiveSeverityFilter(null)}
-                    className="hover:text-secondary"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              {searchQuery && (
-                <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full border border-blue-500/30 flex items-center gap-2">
-                  Search: "{searchQuery}"
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="hover:text-blue-300"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              <span className="text-sm text-gray-500">
-                ({filteredFindings.length} of {report.findings.length} issues)
-              </span>
-            </div>
+            {/* Active Filters Display */}
+            {hasActiveFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="mt-4 pt-4 border-t border-gray-800"
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-gray-500">Active filters:</span>
+                  {activeSeverityFilter && (
+                    <span className="px-3 py-1 bg-primary/20 text-primary text-sm rounded-full border border-primary/30 flex items-center gap-2">
+                      Severity: {activeSeverityFilter}
+                      <button
+                        onClick={() => setActiveSeverityFilter(null)}
+                        className="hover:text-secondary"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {searchQuery && (
+                    <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full border border-blue-500/30 flex items-center gap-2">
+                      Search: "{searchQuery}"
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="hover:text-blue-300"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  <span className="text-sm text-gray-500">
+                    ({filteredFindings.length} of {report.findings.length} issues)
+                  </span>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
-        )}
-      </>
+        </>
       )}
 
       {/* Hierarchical Groups */}
