@@ -2,9 +2,8 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import HierarchicalReportViewer from "@/components/HierarchicalReportViewer";
-import CompactReportHeader from "@/components/CompactReportHeader";
 import AIAssistant from "@/components/AIAssistant";
 import ResizablePanel from "@/components/ResizablePanel";
 import { useReportFilters } from "@/hooks/useReportFilters";
@@ -179,12 +178,45 @@ function ReportViewerContent() {
   return (
     <div className="min-h-screen bg-darker text-white">
       {/* Sticky Compact Header (shows on scroll) */}
-      <CompactReportHeader 
-        report={report}
-        isVisible={isScrolled}
-        onToggleAI={() => setShowAI(!showAI)}
-        showAI={showAI}
-      />
+      <AnimatePresence>
+        {isScrolled && (
+          <motion.div
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 z-50 bg-dark/95 backdrop-blur-sm border-b border-gray-800 shadow-lg"
+          >
+            <div className="container mx-auto px-6 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
+                    report.score >= 80 ? 'bg-green-500/20 text-green-400' :
+                    report.score >= 60 ? 'bg-blue-500/20 text-blue-400' :
+                    report.score >= 40 ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-red-500/20 text-red-400'
+                  }`}>
+                    {report.score}
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-lg">{report.metadata?.projectName || report.projectName || "Report"}</h2>
+                    <p className="text-sm text-gray-400">Grade {report.grade} • {report.findings?.length || 0} issues</p>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAI(!showAI)}
+                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  showAI 
+                    ? 'bg-primary text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {showAI ? 'Hide' : 'Show'} AI Assistant
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="container mx-auto px-6 py-12 max-w-7xl">
         {/* Notice Banner */}
