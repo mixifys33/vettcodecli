@@ -295,12 +295,12 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
       );
     }
 
-    // Try multiple FREE models that are actually available
+    // Try multiple FREE models that are actually available (verified Dec 2025)
     const modelsToTry = [
-      "meta-llama/llama-3.2-3b-instruct:free",
-      "google/gemma-2-9b-it:free",
-      "microsoft/phi-3-mini-128k-instruct:free",
-      "nousresearch/hermes-3-llama-3.1-405b:free",
+      "nvidia/nemotron-3-super:free",
+      "google/gemma-4-31b-it:free",
+      "nvidia/nemotron-3-nano-30b-a3b:free",
+      "openai/gpt-oss-20b:free",
     ];
 
     let lastError: any = null;
