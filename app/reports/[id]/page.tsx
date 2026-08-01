@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import HierarchicalReportViewer from "@/components/HierarchicalReportViewer";
+import CompactReportHeader from "@/components/CompactReportHeader";
 import AIAssistant from "@/components/AIAssistant";
+import { useReportFilters } from "@/hooks/useReportFilters";
 
 interface Report {
   id: string;
@@ -27,6 +29,31 @@ export default function ReportPage() {
   const [error, setError] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Use report filters hook
+  const {
+    searchQuery,
+    setSearchQuery,
+    activeSeverityFilter,
+    setActiveSeverityFilter,
+    severityCounts,
+    filteredFindings,
+    hasActiveFilters,
+    handleSeverityClick,
+    clearFilters,
+  } = useReportFilters(report?.findings || []);
+
+  // Track scroll position to show/hide compact header
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show compact header after scrolling 300px
+      setIsScrolled(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!reportId) return;
@@ -121,19 +148,49 @@ export default function ReportPage() {
       {/* Header */}
       <header className="border-b border-gray-800 bg-dark/50 backdrop-blur-lg sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <a href="/" className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0 flex-1">
+              <a href="/" className="flex items-center gap-2 flex-shrink-0">
                 <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
                   <span className="text-primary font-bold">V</span>
                 </div>
-                <span className="font-bold">VettCode</span>
+                <span className="font-bold hidden sm:inline">VettCode</span>
               </a>
-              <span className="text-gray-500">/</span>
-              <span className="text-gray-400">Report</span>
+              
+              {/* Show compact header when scrolled */}
+              <AnimatePresence>
+                {isScrolled && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex-1 min-w-0"
+                  >
+                    <CompactReportHeader
+                      report={report}
+                      severityCounts={severityCounts}
+                      searchQuery={searchQuery}
+                      onSearchChange={setSearchQuery}
+                      activeSeverity={activeSeverityFilter}
+                      onSeverityClick={handleSeverityClick}
+                      onClearFilters={clearFilters}
+                      hasActiveFilters={hasActiveFilters}
+                      filteredCount={filteredFindings.length}
+                      totalCount={report.findings.length}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              {!isScrolled && (
+                <>
+                  <span className="text-gray-500">/</span>
+                  <span className="text-gray-400 truncate">{report.projectName}</span>
+                </>
+              )}
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-shrink-0">
               <motion.button
                 onClick={() => setShowAI(!showAI)}
                 className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
@@ -145,11 +202,11 @@ export default function ReportPage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <span>🤖</span>
-                AI Assistant
+                <span className="hidden sm:inline">AI Assistant</span>
               </motion.button>
               <a
-                href="/"
-                className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition"
+                href="https://vetted-xi.vercel.app/"
+                className="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition hidden md:block"
               >
                 New Scan
               </a>
@@ -163,7 +220,14 @@ export default function ReportPage() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Report Content */}
           <div className={showAI ? "lg:col-span-2" : "lg:col-span-3"}>
-            <HierarchicalReportViewer report={report} />
+            <HierarchicalReportViewer 
+              report={report}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              activeSeverityFilter={activeSeverityFilter}
+              onSeverityFilterChange={setActiveSeverityFilter}
+              hideHeader={isScrolled}
+            />
           </div>
 
           {/* AI Assistant Sidebar */}

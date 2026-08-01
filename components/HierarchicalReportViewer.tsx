@@ -7,6 +7,11 @@ import SeverityGroup from "./report/SeverityGroup";
 
 interface HierarchicalReportViewerProps {
   report: any;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  activeSeverityFilter?: string | null;
+  onSeverityFilterChange?: (severity: string | null) => void;
+  hideHeader?: boolean;
 }
 
 // Transform flat findings into hierarchical structure
@@ -34,10 +39,24 @@ function transformFindings(findings: any[]) {
   return hierarchy;
 }
 
-export default function HierarchicalReportViewer({ report }: HierarchicalReportViewerProps) {
+export default function HierarchicalReportViewer({ 
+  report,
+  searchQuery: externalSearchQuery,
+  onSearchChange: externalOnSearchChange,
+  activeSeverityFilter: externalSeverityFilter,
+  onSeverityFilterChange: externalOnSeverityFilterChange,
+  hideHeader = false,
+}: HierarchicalReportViewerProps) {
   const [expandedSeverities, setExpandedSeverities] = useState<Set<string>>(new Set());
-  const [activeSeverityFilter, setActiveSeverityFilter] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [internalSearchQuery, setInternalSearchQuery] = useState("");
+  const [internalSeverityFilter, setInternalSeverityFilter] = useState<string | null>(null);
+
+  // Use external state if provided, otherwise use internal state
+  const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
+  const setSearchQuery = externalOnSearchChange || setInternalSearchQuery;
+  
+  const activeSeverityFilter = externalSeverityFilter !== undefined ? externalSeverityFilter : internalSeverityFilter;
+  const setActiveSeverityFilter = externalOnSeverityFilterChange || setInternalSeverityFilter;
 
   // Calculate severity counts
   const severityCounts = useMemo(() => {
@@ -111,20 +130,22 @@ export default function HierarchicalReportViewer({ report }: HierarchicalReportV
 
   return (
     <div className="space-y-6">
-      {/* Summary Header */}
-      <ReportSummary
-        report={report}
-        severityCounts={severityCounts}
-        onSeverityClick={handleSeverityClick}
-        activeSeverity={activeSeverityFilter}
-      />
+      {/* Summary Header - Only show if not hidden */}
+      {!hideHeader && (
+        <>
+          <ReportSummary
+            report={report}
+            severityCounts={severityCounts}
+            onSeverityClick={handleSeverityClick}
+            activeSeverity={activeSeverityFilter}
+          />
 
-      {/* Search & Filter Controls */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-dark border border-gray-800 rounded-xl p-4"
-      >
+          {/* Search & Filter Controls */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-dark border border-gray-800 rounded-xl p-4"
+          >
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -214,7 +235,8 @@ export default function HierarchicalReportViewer({ report }: HierarchicalReportV
             </div>
           </motion.div>
         )}
-      </motion.div>
+      </>
+      )}
 
       {/* Hierarchical Groups */}
       <div className="space-y-4">
