@@ -306,6 +306,8 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
     let lastError: any = null;
     let modelUsed = null;
 
+    console.log("[AI Chat] Starting request with", modelsToTry.length, "models to try");
+
     // Call OpenRouter API with fallback models
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
@@ -376,7 +378,7 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
           model,
           error: errorData,
         };
-        console.log(`Model ${model} failed with status ${response.status}`);
+        console.log(`[AI Chat] Model ${model} failed with status ${response.status}:`, JSON.stringify(errorData).substring(0, 200));
 
         // Don't try other models for auth errors
         if (response.status === 401) {
@@ -397,7 +399,8 @@ Remember: You're a trusted advisor helping a developer build more secure softwar
 
     // All models failed, use fallback
     clearTimeout(timeoutId);
-    console.error("All models failed. Last error:", lastError);
+    console.error("[AI Chat] All models failed. Last error:", JSON.stringify(lastError).substring(0, 300));
+    console.log("[AI Chat] Using fallback response generator");
     
     const fallbackResponse = generateFallbackResponse(message, report);
     
