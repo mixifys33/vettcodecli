@@ -12,6 +12,12 @@ interface HierarchicalReportViewerProps {
   activeSeverityFilter?: string | null;
   onSeverityFilterChange?: (severity: string | null) => void;
   hideHeader?: boolean;
+  onAskAI?: (context: {
+    severity?: string;
+    category?: string;
+    file?: string;
+    issue?: any;
+  }) => void;
 }
 
 // Transform flat findings into hierarchical structure
@@ -46,6 +52,7 @@ export default function HierarchicalReportViewer({
   activeSeverityFilter: externalSeverityFilter,
   onSeverityFilterChange: externalOnSeverityFilterChange,
   hideHeader = false,
+  onAskAI,
 }: HierarchicalReportViewerProps) {
   const [expandedSeverities, setExpandedSeverities] = useState<Set<string>>(new Set());
   const [internalSearchQuery, setInternalSearchQuery] = useState("");
@@ -267,6 +274,7 @@ export default function HierarchicalReportViewer({
                   categories={hierarchy[severity]}
                   isExpanded={expandedSeverities.has(severity)}
                   onToggle={() => toggleSeverity(severity)}
+                  onAskAI={onAskAI}
                 />
               );
             })}

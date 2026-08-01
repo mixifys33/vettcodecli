@@ -9,9 +9,17 @@ interface FileGroupProps {
   issues: any[];
   isExpanded: boolean;
   onToggle: () => void;
+  severity?: string;
+  category?: string;
+  onAskAI?: (context: {
+    severity?: string;
+    category?: string;
+    file?: string;
+    issue?: any;
+  }) => void;
 }
 
-function FileGroup({ fileName, issues, isExpanded, onToggle }: FileGroupProps) {
+function FileGroup({ fileName, issues, isExpanded, onToggle, severity, category, onAskAI }: FileGroupProps) {
   const [showAll, setShowAll] = useState(false);
   const displayedIssues = showAll ? issues : issues.slice(0, 5);
   const hasMore = issues.length > 5;
@@ -41,7 +49,22 @@ function FileGroup({ fileName, issues, isExpanded, onToggle }: FileGroupProps) {
             {fileName}
           </span>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Ask AI Button */}
+          {onAskAI && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAskAI({ severity, category, file: fileName });
+              }}
+              className="px-2 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded border border-purple-500/30 transition flex items-center gap-1 text-xs font-medium"
+              title="Ask AI about this file"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          )}
           <span className="text-xs px-2 py-1 bg-gray-800 rounded text-gray-400">
             {issues.length} {issues.length === 1 ? 'issue' : 'issues'}
           </span>

@@ -9,6 +9,13 @@ interface CategoryGroupProps {
   fileGroups: Record<string, any[]>;
   isExpanded: boolean;
   onToggle: () => void;
+  severity?: string;
+  onAskAI?: (context: {
+    severity?: string;
+    category?: string;
+    file?: string;
+    issue?: any;
+  }) => void;
 }
 
 const categoryIcons: Record<string, string> = {
@@ -26,7 +33,7 @@ const categoryIcons: Record<string, string> = {
   default: "🐛",
 };
 
-function CategoryGroup({ category, fileGroups, isExpanded, onToggle }: CategoryGroupProps) {
+function CategoryGroup({ category, fileGroups, isExpanded, onToggle, severity, onAskAI }: CategoryGroupProps) {
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
   
   const totalIssues = Object.values(fileGroups).reduce((sum, issues) => sum + issues.length, 0);
@@ -68,6 +75,22 @@ function CategoryGroup({ category, fileGroups, isExpanded, onToggle }: CategoryG
           </span>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Ask AI Button */}
+          {onAskAI && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAskAI({ severity, category });
+              }}
+              className="px-2.5 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded border border-purple-500/30 transition flex items-center gap-1.5 text-xs font-medium"
+              title="Ask AI about this category"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="hidden lg:inline">AI</span>
+            </button>
+          )}
           <span className="text-sm text-gray-400">
             {fileCount} {fileCount === 1 ? 'file' : 'files'}
           </span>
@@ -97,6 +120,9 @@ function CategoryGroup({ category, fileGroups, isExpanded, onToggle }: CategoryG
                     issues={issues}
                     isExpanded={expandedFiles.has(fileName)}
                     onToggle={() => toggleFile(fileName)}
+                    severity={severity}
+                    category={category}
+                    onAskAI={onAskAI}
                   />
                 ))}
             </div>

@@ -31,6 +31,8 @@ export default function ReportPage() {
   const [expired, setExpired] = useState(false);
   const [showAI, setShowAI] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [aiInitialMessage, setAiInitialMessage] = useState<string | undefined>(undefined);
+  const [aiContext, setAiContext] = useState<any>(undefined);
 
   // Use report filters hook
   const {
@@ -44,6 +46,91 @@ export default function ReportPage() {
     handleSeverityClick,
     clearFilters,
   } = useReportFilters(report?.findings || []);
+
+  // Handle AI assistant with context
+  const handleAskAI = (context: {
+    severity?: string;
+    category?: string;
+    file?: string;
+    issue?: any;
+  }) => {
+    let message = "";
+    let contextData: any = { section: "findings" };
+
+    if (context.issue) {
+      // Specific issue
+      message = `I need help with this security issue:
+
+**Issue:** ${context.issue.title}
+**Severity:** ${context.issue.severity}
+**Category:** ${context.issue.category}
+**File:** ${context.issue.file}
+${context.issue.line ? `**Line:** ${context.issue.line}` : ""}
+
+**Description:** ${context.issue.description}
+
+What should I do to fix this issue, and what are the security implications?`;
+      
+      contextData.focusItem = {
+        type: "finding",
+        data: context.issue
+      };
+    } else if (context.file) {
+      // File-level context
+      const fileIssues = report?.findings.filter((f: any) => f.file === context.file) || [];
+      message = `I have security issues in this file:
+
+**File:** ${context.file}
+**Category:** ${context.category || "Multiple categories"}
+**Total Issues:** ${fileIssues.length}
+**Severity:** ${context.severity || "Mixed"}
+
+What are the main security concerns in this file and how should I prioritize fixes?`;
+      
+      contextData.focusItem = {
+        type: "file",
+        data: { file: context.file, issues: fileIssues }
+      };
+    } else if (context.category) {
+      // Category-level context
+      const categoryIssues = report?.findings.filter((f: any) => 
+        f.category === context.category && (!context.severity || f.severity === context.severity)
+      ) || [];
+      
+      message = `I have multiple security issues in this category:
+
+**Category:** ${context.category}
+${context.severity ? `**Severity:** ${context.severity}` : ""}
+**Total Issues:** ${categoryIssues.length}
+
+What are the common patterns and how should I approach fixing these issues?`;
+      
+      contextData.focusItem = {
+        type: "category",
+        data: { category: context.category, issues: categoryIssues }
+      };
+    } else if (context.severity) {
+      // Severity-level context
+      const severityIssues = report?.findings.filter((f: any) => f.severity === context.severity) || [];
+      
+      message = `I have ${severityIssues.length} ${context.severity} severity issues:
+
+**Severity Level:** ${context.severity}
+**Total Issues:** ${severityIssues.length}
+**Categories:** ${[...new Set(severityIssues.map((f: any) => f.category))].join(", ")}
+
+How should I prioritize and address these ${context.severity} severity issues?`;
+      
+      contextData.focusItem = {
+        type: "severity",
+        data: { severity: context.severity, issues: severityIssues }
+      };
+    }
+
+    setAiInitialMessage(message);
+    setAiContext(contextData);
+    setShowAI(true);
+  };
 
   // Track scroll position to show/hide compact header
   useEffect(() => {
@@ -282,6 +369,7 @@ export default function ReportPage() {
               activeSeverityFilter={activeSeverityFilter}
               onSeverityFilterChange={setActiveSeverityFilter}
               hideHeader={isScrolled}
+              onAskAI={handleAskAI}
             />
           </div>
         </div>
@@ -296,7 +384,12 @@ export default function ReportPage() {
             maxWidth={900}
             onClose={() => setShowAI(false)}
           >
-            <AIAssistant report={report} onClose={() => setShowAI(false)} />
+            <AIAssistant 
+              report={report} 
+              onClose={() => setShowAI(false)} 
+              initialMessage={aiInitialMessage}
+              context={aiContext}
+            />
           </ResizablePanel>
         )}
       </AnimatePresence>
