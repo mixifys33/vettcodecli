@@ -20,6 +20,9 @@ import {
 
 import DependencyGraphViz from "@/components/DependencyGraphViz";
 import ProjectStructureTree from "@/components/ProjectStructureTree";
+import AIAssistant from "@/components/AIAssistant";
+import ResizablePanel from "@/components/ResizablePanel";
+import { AnimatePresence } from "framer-motion";
 
 interface Blueprint {
   meta: {
@@ -80,6 +83,9 @@ export default function ArchitecturePage() {
   const [blueprint, setBlueprint] = useState<Blueprint | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAI, setShowAI] = useState(false);
+  const [aiContext, setAiContext] = useState<string | null>(null);
+  const [fullReport, setFullReport] = useState<any>(null);
 
   useEffect(() => {
     async function fetchReport() {
@@ -88,6 +94,9 @@ export default function ArchitecturePage() {
         if (!response.ok) throw new Error("Failed to load report");
         
         const data = await response.json();
+        
+        // Store full report for AI context
+        setFullReport(data.report);
         
         // The API returns { report: {..., blueprint: {...}} }
         if (data.report?.blueprint) {
@@ -104,6 +113,21 @@ export default function ArchitecturePage() {
 
     fetchReport();
   }, [reportId]);
+
+  const handleAskAI = (risk: any) => {
+    // Build context for this specific risk
+    const context = `I have a question about this high-risk file in my project:
+
+**File:** ${risk.file}
+**Risk Score:** ${risk.score}/100
+**Risk Tags:** ${risk.tags.join(", ")}
+**Reasons:** ${risk.reasons.join(", ")}
+
+What security concerns should I be aware of for this file, and what specific steps should I take to reduce its risk?`;
+
+    setAiContext(context);
+    setShowAI(true);
+  };
 
   if (loading) {
     return (
@@ -213,7 +237,7 @@ export default function ArchitecturePage() {
           >
             <div className="grid gap-3">
               {riskSurface.slice(0, 10).map((risk, idx) => (
-                <RiskCard key={idx} risk={risk} rank={idx + 1} />
+                <RiskCard key={idx} risk={risk} rank={idx + 1} onAskAI={handleAskAI} />
               ))}
             </div>
           </Section>
@@ -319,6 +343,24 @@ export default function ArchitecturePage() {
           </Section>
         )}
       </div>
+
+      {/* AI Assistant Resizable Panel */}
+      <AnimatePresence>
+        {showAI && fullReport && (
+          <ResizablePanel
+            defaultWidth={450}
+            minWidth={350}
+            maxWidth={900}
+            onClose={() => setShowAI(false)}
+          >
+            <AIAssistant 
+              report={fullReport} 
+              onClose={() => setShowAI(false)}
+              initialMessage={aiContext || undefined}
+            />
+          </ResizablePanel>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -414,7 +456,7 @@ function EntryPointCard({ entryPoint }: { entryPoint: any }) {
 }
 
 // Risk Card
-function RiskCard({ risk, rank }: { risk: any; rank: number }) {
+function RiskCard({ risk, rank, onAskAI }: { risk: any; rank: number; onAskAI: (risk: any) => void }) {
   const getRiskColor = (score: number) => {
     if (score >= 80) return "text-red-500 bg-red-500/20 border-red-500/30";
     if (score >= 60) return "text-orange-500 bg-orange-500/20 border-orange-500/30";
@@ -425,9 +467,9 @@ function RiskCard({ risk, rank }: { risk: any; rank: number }) {
   return (
     <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 hover:border-orange-500/50 transition-colors">
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1">
           <div className="text-2xl font-bold text-gray-600">#{rank}</div>
-          <div>
+          <div className="flex-1">
             <div className="font-mono text-sm text-white mb-1">{risk.file}</div>
             <div className="flex flex-wrap gap-1">
               {risk.tags.map((tag: string, idx: number) => (
@@ -441,8 +483,20 @@ function RiskCard({ risk, rank }: { risk: any; rank: number }) {
             </div>
           </div>
         </div>
-        <div className={`px-3 py-1 rounded-lg border font-bold ${getRiskColor(risk.score)}`}>
-          {risk.score}
+        <div className="flex items-center gap-3">
+          <div className={`px-3 py-1 rounded-lg border font-bold ${getRiskColor(risk.score)}`}>
+            {risk.score}
+          </div>
+          <button
+            onClick={() => onAskAI(risk)}
+            className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg border border-purple-500/30 transition flex items-center gap-2 text-sm font-medium"
+            title="Ask AI about this risk"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Ask AI</span>
+          </button>
         </div>
       </div>
       <div className="space-y-1">

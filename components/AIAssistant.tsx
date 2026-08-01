@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 interface AIAssistantProps {
   report: any;
   onClose?: () => void;
+  initialMessage?: string;
 }
 
 // Message bubble component
@@ -109,9 +110,16 @@ const LoadingIndicator = memo(() => (
 
 LoadingIndicator.displayName = "LoadingIndicator";
 
-export default function AIAssistant({ report, onClose }: AIAssistantProps) {
+export default function AIAssistant({ report, onClose, initialMessage }: AIAssistantProps) {
   const [input, setInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Use initialMessage if provided
+  useEffect(() => {
+    if (initialMessage && input === "") {
+      setInput(initialMessage);
+    }
+  }, [initialMessage]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
