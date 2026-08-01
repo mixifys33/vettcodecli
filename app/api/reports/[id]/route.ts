@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import ImageKit from "imagekit";
+import jwt from 'jsonwebtoken';
+import connectDB from '@/backend/config/database';
+import Report from '@/backend/models/Report';
 
 // Initialize ImageKit
 const imagekit = new ImageKit({
@@ -7,6 +10,31 @@ const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
   urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
 });
+
+interface JwtPayload {
+  id: string;
+  iat: number;
+  exp: number;
+}
+
+async function verifyToken(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { authenticated: false, developerId: null };
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'vettcode-jwt-secret-key-2024'
+    ) as JwtPayload;
+
+    return { authenticated: true, developerId: decoded.id };
+  } catch (error) {
+    return { authenticated: false, developerId: null };
+  }
+}
 
 /**
  * GET /api/reports/[id]
@@ -101,7 +129,8 @@ export async function GET(
 
 /**
  * DELETE /api/reports/[id]
- * Delete report from ImageKit
+ * Delete report from both MongoDB and ImageKit
+ * Requires authentication
  */
 export async function DELETE(
   request: NextRequest,
@@ -117,31 +146,55 @@ export async function DELETE(
       );
     }
 
-    console.log('[Report Delete] Attempting to delete:', reportId);
+    // Verify authentication
+    const authResult = await verifyToken(request);
+    if (!authResult.authenticated || !authResult.developerId) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Please log in.' },
+        { status: 401 }
+      );
+    }
 
-    // Get file path
-    const filePath = `vettcode-reports/${reportId}.json`;
-    
-    // List files to get fileId
-    const files = await imagekit.listFiles({
-      path: "/vettcode-reports",
-      searchQuery: `name="${reportId}.json"`,
+    console.log('[Report Delete] User:', authResult.developerId, 'Report:', reportId);
+
+    await connectDB();
+
+    // Find report in MongoDB and verify ownership
+    const report = await Report.findOne({
+      reportId: reportId,
+      developerId: authResult.developerId,
     });
 
-    if (!files || files.length === 0) {
-      console.log('[Report Delete] Report not found in ImageKit');
+    if (!report) {
       return NextResponse.json(
-        { error: "Report not found" },
+        { error: "Report not found or you don't have permission to delete it" },
         { status: 404 }
       );
     }
 
-    const fileId = files[0].fileId;
+    console.log('[Report Delete] Found report, deleting from ImageKit and MongoDB');
 
     // Delete from ImageKit
-    await imagekit.deleteFile(fileId);
+    try {
+      const files = await imagekit.listFiles({
+        path: "/vettcode-reports",
+        searchQuery: `name="${reportId}.json"`,
+      });
 
-    console.log('[Report Delete] Successfully deleted report:', reportId);
+      if (files && files.length > 0) {
+        await imagekit.deleteFile(files[0].fileId);
+        console.log('[Report Delete] Deleted from ImageKit');
+      } else {
+        console.log('[Report Delete] File not found in ImageKit, continuing with MongoDB deletion');
+      }
+    } catch (imagekitError) {
+      console.error('[Report Delete] ImageKit deletion failed:', imagekitError);
+      // Continue with MongoDB deletion even if ImageKit fails
+    }
+
+    // Delete from MongoDB
+    await Report.deleteOne({ _id: report._id });
+    console.log('[Report Delete] Deleted from MongoDB');
 
     return NextResponse.json({
       success: true,

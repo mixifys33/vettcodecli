@@ -72,7 +72,7 @@ export default function ReportsPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!confirm(`Are you sure you want to delete the report for "${projectName}"? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete the report for "${projectName}"?\n\nThis will permanently delete:\n• The report from the database\n• The report file from storage\n\nThis action cannot be undone.`)) {
       return;
     }
 
@@ -80,24 +80,36 @@ export default function ReportsPage() {
 
     try {
       const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.TOKEN);
+      
+      if (!token) {
+        throw new Error("Not authenticated. Please log in again.");
+      }
+
       const response = await fetch(getApiUrl(`/api/reports/${reportId}`), {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401) {
+          toast.error("Session expired. Please log in again.", { id: deleteToast });
+          router.push("/login");
+          return;
+        }
         throw new Error(data.error || "Failed to delete report");
       }
 
       toast.success("Report deleted successfully", { id: deleteToast });
       
-      // Refresh reports list
-      fetchReports();
+      // Remove from local state immediately for better UX
+      setReports(prevReports => prevReports.filter(r => r.id !== reportId));
     } catch (error: any) {
+      console.error("Delete error:", error);
       toast.error(error.message || "Failed to delete report", { id: deleteToast });
     }
   };
@@ -108,13 +120,46 @@ export default function ReportsPage() {
 
     const shareUrl = `${window.location.origin}/reports/${reportId}`;
 
-    // Copy to clipboard
+    // Try modern Web Share API first (mobile-friendly)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Security Report: ${projectName}`,
+          text: `View the security scan report for ${projectName}`,
+          url: shareUrl,
+        });
+        toast.success("Report shared successfully!");
+        return;
+      } catch (error: any) {
+        // User cancelled or share failed, fall back to clipboard
+        if (error.name !== 'AbortError') {
+          console.error('Share failed:', error);
+        }
+      }
+    }
+
+    // Fallback to clipboard
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast.success("Report link copied to clipboard!");
     } catch (error) {
-      // Fallback: show the URL in a prompt
-      prompt("Copy this link to share the report:", shareUrl);
+      // Final fallback: show prompt
+      const textarea = document.createElement('textarea');
+      textarea.value = shareUrl;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      
+      try {
+        document.execCommand('copy');
+        toast.success("Report link copied to clipboard!");
+      } catch (err) {
+        // Last resort: show alert with URL
+        alert(`Share this report:\n\n${shareUrl}`);
+      } finally {
+        document.body.removeChild(textarea);
+      }
     }
   };
 
