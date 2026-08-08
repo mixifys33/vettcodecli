@@ -337,7 +337,42 @@ export default function StructuredReportViewer({
           )}
 
           {activeTab === 'dataFlow' && hasDataFlow && (
-            <DataFlowViewer dataFlowGraph={report.dataFlowGraph!} />
+            <div className="space-y-4">
+              {/* View Full Visualization Button */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">Interactive Data Flow Visualization</h3>
+                      <p className="text-sm text-gray-400">
+                        View full-screen interactive graph with {report.dataFlowGraph?.stats?.totalFlows} flows
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={`/reports/${report.id}/dataflow`}
+                    className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition flex items-center gap-2"
+                  >
+                    Open Visualization
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+              
+              <DataFlowViewer dataFlowGraph={report.dataFlowGraph!} />
+            </div>
           )}
 
           {activeTab === 'blueprint' && hasBlueprint && (
