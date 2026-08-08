@@ -66,11 +66,11 @@ export default function RootCausesViewer({ rootCauses, onAskAI }: RootCausesView
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-2xl font-bold text-gray-500">#{index + 1}</span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(rootCause.impact.severity)}`}>
-                    {rootCause.impact.severity.toUpperCase()}
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(rootCause.impact?.severity || 'low')}`}>
+                    {(rootCause.impact?.severity || 'unknown').toUpperCase()}
                   </span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getExploitabilityColor(rootCause.impact.exploitability)}`}>
-                    {rootCause.impact.exploitability} exploitability
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getExploitabilityColor(rootCause.impact?.exploitability || 'low')}`}>
+                    {rootCause.impact?.exploitability || 'unknown'} exploitability
                   </span>
                 </div>
                 <h3 className="text-xl font-bold text-white">{rootCause.title}</h3>
@@ -96,19 +96,19 @@ export default function RootCausesViewer({ rootCauses, onAskAI }: RootCausesView
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
               <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
                 <div className="text-xs text-gray-500">Attack Paths</div>
-                <div className="text-xl font-bold text-red-400">{rootCause.attackPaths.length}</div>
+                <div className="text-xl font-bold text-red-400">{rootCause.attackPaths?.length || 0}</div>
               </div>
               <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
                 <div className="text-xs text-gray-500">Affected Files</div>
-                <div className="text-xl font-bold text-orange-400">{rootCause.impact.affectedFiles.length}</div>
+                <div className="text-xl font-bold text-orange-400">{rootCause.impact?.affectedFiles?.length || 0}</div>
               </div>
               <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
                 <div className="text-xs text-gray-500">Related Issues</div>
-                <div className="text-xl font-bold text-yellow-400">{rootCause.relatedIssueIds.length}</div>
+                <div className="text-xl font-bold text-yellow-400">{rootCause.relatedIssueIds?.length || 0}</div>
               </div>
               <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
                 <div className="text-xs text-gray-500">Criticality</div>
-                <div className="text-xl font-bold text-purple-400">{rootCause.impact.criticalityScore}/100</div>
+                <div className="text-xl font-bold text-purple-400">{rootCause.impact?.criticalityScore || 0}/100</div>
               </div>
             </div>
 
@@ -124,7 +124,7 @@ export default function RootCausesViewer({ rootCauses, onAskAI }: RootCausesView
             </div>
 
             {/* Attack Types */}
-            {rootCause.impact.attackTypes.length > 0 && (
+            {rootCause.impact?.attackTypes && rootCause.impact.attackTypes.length > 0 && (
               <div className="mb-4">
                 <div className="text-sm font-semibold text-gray-400 mb-2">Attack Types</div>
                 <div className="flex flex-wrap gap-2">
@@ -138,7 +138,7 @@ export default function RootCausesViewer({ rootCauses, onAskAI }: RootCausesView
             )}
 
             {/* Fix Strategy */}
-            {rootCause.fixStrategy.length > 0 && (
+            {rootCause.fixStrategy && rootCause.fixStrategy.length > 0 && (
               <div className="border-t border-gray-800 pt-4">
                 <div className="text-sm font-semibold text-green-400 mb-2 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,20 +158,20 @@ export default function RootCausesViewer({ rootCauses, onAskAI }: RootCausesView
             )}
 
             {/* Sample Attack Path (First one) */}
-            {rootCause.attackPaths.length > 0 && (
+            {rootCause.attackPaths && rootCause.attackPaths.length > 0 && (
               <details className="mt-4 border-t border-gray-800 pt-4">
                 <summary className="text-sm font-semibold text-gray-400 cursor-pointer hover:text-white transition">
                   View Sample Attack Path ({rootCause.attackPaths.length} total)
                 </summary>
                 <div className="mt-3 p-3 bg-gray-900/50 rounded-lg border border-gray-800">
                   <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
-                    <span className="text-red-400 font-mono">{rootCause.attackPaths[0].source}</span>
+                    <span className="text-red-400 font-mono">{rootCause.attackPaths[0]?.source || 'unknown'}</span>
                     <span>→</span>
-                    <span className="text-yellow-400">{rootCause.attackPaths[0].path.length} steps</span>
+                    <span className="text-yellow-400">{rootCause.attackPaths[0]?.path?.length || 0} steps</span>
                     <span>→</span>
-                    <span className="text-orange-400 font-mono">{rootCause.attackPaths[0].sink}</span>
+                    <span className="text-orange-400 font-mono">{rootCause.attackPaths[0]?.sink || 'unknown'}</span>
                   </div>
-                  {rootCause.attackPaths[0].dataType && (
+                  {rootCause.attackPaths[0]?.dataType && (
                     <div className="text-xs text-purple-400">
                       Data Type: <span className="font-mono">{rootCause.attackPaths[0].dataType}</span>
                     </div>
