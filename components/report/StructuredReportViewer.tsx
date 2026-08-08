@@ -42,11 +42,11 @@ export default function StructuredReportViewer({
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   // Check what features are available
-  const isStructured = report.format === 'structured' || report.structured || report.rootCauses;
-  const hasRootCauses = report.rootCauses && report.rootCauses.length > 0;
-  const hasCodeFixes = report.codeFixes && report.codeFixes.length > 0;
-  const hasDataFlow = report.dataFlowGraph && report.dataFlowGraph.nodes && report.dataFlowGraph.nodes.length > 0;
-  const hasBlueprint = report.blueprint && report.blueprint.nodes;
+  const isStructured = !!(report.format === 'structured' || report.structured || report.rootCauses);
+  const hasRootCauses = !!(report.rootCauses && report.rootCauses.length > 0);
+  const hasCodeFixes = !!(report.codeFixes && report.codeFixes.length > 0);
+  const hasDataFlow = !!(report.dataFlowGraph && report.dataFlowGraph.nodes && report.dataFlowGraph.nodes.length > 0);
+  const hasBlueprint = !!(report.blueprint && report.blueprint.nodes);
 
   // Define tabs
   const tabs: Tab[] = [
