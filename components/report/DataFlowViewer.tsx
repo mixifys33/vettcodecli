@@ -18,6 +18,15 @@ export default function DataFlowViewer({ dataFlowGraph }: DataFlowViewerProps) {
 
   const { nodes, edges, stats } = dataFlowGraph;
 
+  // Handle both CLI format (sources/sinks as arrays) and expected format (as numbers)
+  const sourcesCount = typeof stats.sources === 'number' ? stats.sources : (stats.sources?.length || 0);
+  const sinksCount = typeof stats.sinks === 'number' ? stats.sinks : (stats.sinks?.length || 0);
+  
+  // Calculate tainted/sanitized from edges if not provided
+  const taintedFlows = stats.taintedFlows ?? edges.filter(e => e.tainted).length;
+  const sanitizedFlows = stats.sanitizedFlows ?? edges.filter(e => e.sanitized).length;
+  const totalFlows = stats.totalFlows || edges.length;
+
   // Group nodes by type
   const nodesByType = {
     source: nodes.filter(n => n.type === 'source'),
@@ -75,8 +84,8 @@ export default function DataFlowViewer({ dataFlowGraph }: DataFlowViewerProps) {
     }
   };
 
-  const taintedRate = stats.totalFlows > 0 ? ((stats.taintedFlows / stats.totalFlows) * 100).toFixed(1) : '0';
-  const sanitizedRate = stats.totalFlows > 0 ? ((stats.sanitizedFlows / stats.totalFlows) * 100).toFixed(1) : '0';
+  const taintedRate = totalFlows > 0 ? ((taintedFlows / totalFlows) * 100).toFixed(1) : '0';
+  const sanitizedRate = totalFlows > 0 ? ((sanitizedFlows / totalFlows) * 100).toFixed(1) : '0';
 
   return (
     <div className="space-y-4">
@@ -87,7 +96,7 @@ export default function DataFlowViewer({ dataFlowGraph }: DataFlowViewerProps) {
             Data Flow Analysis
           </h2>
           <p className="text-gray-400 mt-1">
-            {stats.totalFlows} data flows tracked • {stats.sources} sources → {stats.sinks} sinks
+            {totalFlows} data flows tracked • {sourcesCount} sources → {sinksCount} sinks
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -120,16 +129,16 @@ export default function DataFlowViewer({ dataFlowGraph }: DataFlowViewerProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-dark border border-blue-500/30 rounded-xl p-6">
               <div className="text-blue-400 text-sm mb-2">Total Flows</div>
-              <div className="text-3xl font-bold text-white">{stats.totalFlows}</div>
+              <div className="text-3xl font-bold text-white">{totalFlows}</div>
             </div>
             <div className="bg-dark border border-red-500/30 rounded-xl p-6">
               <div className="text-red-400 text-sm mb-2">Tainted</div>
-              <div className="text-3xl font-bold text-white">{stats.taintedFlows}</div>
+              <div className="text-3xl font-bold text-white">{taintedFlows}</div>
               <div className="text-xs text-red-400 mt-1">{taintedRate}%</div>
             </div>
             <div className="bg-dark border border-green-500/30 rounded-xl p-6">
               <div className="text-green-400 text-sm mb-2">Sanitized</div>
-              <div className="text-3xl font-bold text-white">{stats.sanitizedFlows}</div>
+              <div className="text-3xl font-bold text-white">{sanitizedFlows}</div>
               <div className="text-xs text-green-400 mt-1">{sanitizedRate}%</div>
             </div>
             <div className="bg-dark border border-purple-500/30 rounded-xl p-6">
@@ -145,7 +154,7 @@ export default function DataFlowViewer({ dataFlowGraph }: DataFlowViewerProps) {
             <div className="flex items-center gap-4 justify-center p-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-blue-500/20 border border-blue-500/30 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-2xl font-bold text-blue-400">{stats.sources}</span>
+                  <span className="text-2xl font-bold text-blue-400">{sourcesCount}</span>
                 </div>
                 <div className="text-sm text-blue-400">Sources</div>
               </div>
@@ -159,7 +168,7 @@ export default function DataFlowViewer({ dataFlowGraph }: DataFlowViewerProps) {
               
               <div className="text-center">
                 <div className="w-16 h-16 bg-red-500/20 border border-red-500/30 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-2xl font-bold text-red-400">{stats.sinks}</span>
+                  <span className="text-2xl font-bold text-red-400">{sinksCount}</span>
                 </div>
                 <div className="text-sm text-red-400">Sinks</div>
               </div>
@@ -169,13 +178,13 @@ export default function DataFlowViewer({ dataFlowGraph }: DataFlowViewerProps) {
               <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="text-sm text-red-400">Tainted Paths: {stats.taintedFlows}</span>
+                  <span className="text-sm text-red-400">Tainted Paths: {taintedFlows}</span>
                 </div>
               </div>
               <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-green-400">Sanitized Paths: {stats.sanitizedFlows}</span>
+                  <span className="text-sm text-green-400">Sanitized Paths: {sanitizedFlows}</span>
                 </div>
               </div>
             </div>

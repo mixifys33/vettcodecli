@@ -96,10 +96,16 @@ export interface DataFlowGraph {
   edges: DataFlowEdge[];
   stats: {
     totalFlows: number;
-    taintedFlows: number;
-    sanitizedFlows: number;
-    sources: number;
-    sinks: number;
+    taintedFlows?: number;          // Optional for backward compatibility
+    sanitizedFlows?: number;         // Optional for backward compatibility
+    sources: number | string[];      // Can be count or array of source names
+    sinks: number | string[];        // Can be count or array of sink names
+    criticalPaths?: number;          // From CLI format
+    highRiskPaths?: number;          // From CLI format
+  };
+  metadata?: {
+    generatedAt: string;
+    version: string;
   };
 }
 

@@ -78,6 +78,15 @@ export default function DataFlowPage() {
 
   const { nodes, edges, stats } = dataFlowGraph;
 
+  // Handle both CLI format (sources/sinks as arrays) and expected format (as numbers)
+  const sourcesCount = typeof stats.sources === 'number' ? stats.sources : (Array.isArray(stats.sources) ? stats.sources.length : 0);
+  const sinksCount = typeof stats.sinks === 'number' ? stats.sinks : (Array.isArray(stats.sinks) ? stats.sinks.length : 0);
+  
+  // Calculate tainted/sanitized from edges if not provided
+  const taintedFlows = stats.taintedFlows ?? edges.filter(e => e.tainted).length;
+  const sanitizedFlows = stats.sanitizedFlows ?? edges.filter(e => e.sanitized).length;
+  const totalFlows = stats.totalFlows || edges.length;
+
   // Filter nodes
   const filteredNodes = nodes.filter(node => {
     if (filterType && node.type !== filterType) return false;
@@ -111,7 +120,7 @@ export default function DataFlowPage() {
     };
   };
 
-  const taintedRate = stats.totalFlows > 0 ? ((stats.taintedFlows / stats.totalFlows) * 100).toFixed(1) : '0';
+  const taintedRate = totalFlows > 0 ? ((taintedFlows / totalFlows) * 100).toFixed(1) : '0';
 
   const [viewType, setViewType] = useState<'visual' | 'list'>('visual');
 
@@ -136,7 +145,7 @@ export default function DataFlowPage() {
                   Data Flow Visualization
                 </h1>
                 <p className="text-gray-400 text-sm">
-                  Interactive analysis • {stats.totalFlows} flows • {stats.sources} sources → {stats.sinks} sinks
+                  Interactive analysis • {totalFlows} flows • {sourcesCount} sources → {sinksCount} sinks
                 </p>
               </div>
             </div>
@@ -189,15 +198,15 @@ export default function DataFlowPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
                   <div className="text-xs text-gray-500">Total Flows</div>
-                  <div className="text-xl font-bold text-white">{stats.totalFlows}</div>
+                  <div className="text-xl font-bold text-white">{totalFlows}</div>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-3 border border-red-500/30">
                   <div className="text-xs text-red-400">Tainted</div>
-                  <div className="text-xl font-bold text-red-400">{stats.taintedFlows}</div>
+                  <div className="text-xl font-bold text-red-400">{taintedFlows}</div>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-3 border border-green-500/30">
                   <div className="text-xs text-green-400">Sanitized</div>
-                  <div className="text-xl font-bold text-green-400">{stats.sanitizedFlows}</div>
+                  <div className="text-xl font-bold text-green-400">{sanitizedFlows}</div>
                 </div>
                 <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
                   <div className="text-xs text-gray-500">Nodes</div>
@@ -440,11 +449,11 @@ export default function DataFlowPage() {
                       <div className="mt-6 space-y-2">
                         <div className="flex items-center justify-between p-2 bg-red-500/10 rounded border border-red-500/30">
                           <span className="text-xs text-red-400">Tainted Flows</span>
-                          <span className="text-sm font-bold text-red-400">{stats.taintedFlows}</span>
+                          <span className="text-sm font-bold text-red-400">{taintedFlows}</span>
                         </div>
                         <div className="flex items-center justify-between p-2 bg-green-500/10 rounded border border-green-500/30">
                           <span className="text-xs text-green-400">Sanitized Flows</span>
-                          <span className="text-sm font-bold text-green-400">{stats.sanitizedFlows}</span>
+                          <span className="text-sm font-bold text-green-400">{sanitizedFlows}</span>
                         </div>
                       </div>
                     </div>
