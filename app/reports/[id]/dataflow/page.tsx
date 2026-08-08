@@ -17,6 +17,7 @@ export default function DataFlowPage() {
   const [filterType, setFilterType] = useState<string | null>(null);
   const [showTainted, setShowTainted] = useState(true);
   const [showSanitized, setShowSanitized] = useState(true);
+  const [viewType, setViewType] = useState<'visual' | 'list'>('visual');
 
   useEffect(() => {
     if (!reportId) return;
@@ -121,8 +122,6 @@ export default function DataFlowPage() {
   };
 
   const taintedRate = totalFlows > 0 ? ((taintedFlows / totalFlows) * 100).toFixed(1) : '0';
-
-  const [viewType, setViewType] = useState<'visual' | 'list'>('visual');
 
   return (
     <div className="min-h-screen bg-darker text-white">
