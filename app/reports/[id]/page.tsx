@@ -10,18 +10,7 @@ import AIAssistant from "@/components/AIAssistant";
 import ResizablePanel from "@/components/ResizablePanel";
 import { useReportFilters } from "@/hooks/useReportFilters";
 import { getLocalReportById } from "@/lib/localReportStorage";
-
-interface Report {
-  id: string;
-  projectName: string;
-  findings: any[];
-  score: number;
-  grade: string;
-  summary: string;
-  metadata: any;
-  expiresAt: string;
-  createdAt: string;
-}
+import { Report } from "@/types/report";
 
 export default function ReportPage() {
   const params = useParams();
