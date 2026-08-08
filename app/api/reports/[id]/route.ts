@@ -62,6 +62,7 @@ async function verifyToken(req: NextRequest) {
 /**
  * GET /api/reports/[id]
  * Fetch report directly from ImageKit
+ * SUPPORTS NEW STRUCTURED FORMAT (v3.0+)
  */
 export async function GET(
   request: NextRequest,
@@ -77,30 +78,31 @@ export async function GET(
       );
     }
 
-    // Construct ImageKit URL from report ID
-    const imageKitUrl = `https://ik.imagekit.io/HackerX1234567/vettcode-reports/${reportId}.json`;
+    // Construct ImageKit URLs
+    const mainReportUrl = `https://ik.imagekit.io/HackerX1234567/vettcode-reports/${reportId}.json`;
+    const dataFlowUrl = `https://ik.imagekit.io/HackerX1234567/vettcode-reports/dataflow/${reportId}_dataflow.json`;
+    const blueprintUrl = `https://ik.imagekit.io/HackerX1234567/vettcode-reports/blueprints/${reportId}_blueprint.json`;
     
-    console.log('[Report Fetch] Fetching from ImageKit:', imageKitUrl);
+    console.log('[Report Fetch] Fetching from ImageKit:', mainReportUrl);
     
-    // Fetch report from ImageKit with retry
+    // Fetch main report with retry
     let response;
     let lastError: Error | null = null;
     
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        response = await fetch(imageKitUrl, {
+        response = await fetch(mainReportUrl, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
           },
-          cache: 'no-store', // Don't cache to get latest
+          cache: 'no-store',
         });
         
         if (response.ok) break;
         
         lastError = new Error(`ImageKit returned ${response.status}`);
         
-        // Wait before retry
         if (attempt < 2) {
           await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
         }
@@ -127,6 +129,63 @@ export async function GET(
     
     const reportData = await response.json();
     
+    // Check if this is the new structured format (v3.0+)
+    const isStructuredFormat = reportData.metadata?.version === '3.0.0' || 
+                              reportData.metadata?.format === 'structured' ||
+                              reportData.structured;
+    
+    console.log('[Report Fetch] Format detected:', isStructuredFormat ? 'STRUCTURED (v3.0+)' : 'LEGACY');
+    
+    // If structured format, fetch additional artifacts
+    if (isStructuredFormat) {
+      // Try to fetch data flow graph
+      try {
+        const dataFlowResponse = await fetch(dataFlowUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store',
+        });
+        
+        if (dataFlowResponse.ok) {
+          const dataFlowData = await dataFlowResponse.json();
+          reportData.dataFlowGraph = dataFlowData;
+          console.log('[Report Fetch] ✅ Data flow graph loaded');
+        }
+      } catch (e) {
+        console.log('[Report Fetch] Data flow graph not available (optional)');
+      }
+      
+      // Try to fetch blueprint
+      try {
+        const blueprintResponse = await fetch(blueprintUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store',
+        });
+        
+        if (blueprintResponse.ok) {
+          const blueprintData = await blueprintResponse.json();
+          reportData.blueprint = blueprintData;
+          console.log('[Report Fetch] ✅ Blueprint loaded');
+        }
+      } catch (e) {
+        console.log('[Report Fetch] Blueprint not available (optional)');
+      }
+      
+      // Extract structured data from package if it exists
+      if (reportData.report && reportData.structured) {
+        // New format: Complete package
+        reportData.rootCauses = reportData.structured.rootCauses || [];
+        reportData.codeFixes = reportData.structured.codeFixes || [];
+        reportData.format = 'structured';
+        
+        // Merge report fields
+        Object.assign(reportData, reportData.report);
+      }
+    } else {
+      reportData.format = 'legacy';
+    }
+    
     // Check expiration
     if (reportData.expiresAt && new Date() > new Date(reportData.expiresAt)) {
       return NextResponse.json(
@@ -136,6 +195,12 @@ export async function GET(
     }
     
     console.log('[Report Fetch] Successfully loaded report:', reportId);
+    console.log('[Report Fetch] Features:', {
+      rootCauses: reportData.rootCauses?.length || 0,
+      codeFixes: reportData.codeFixes?.length || 0,
+      dataFlowGraph: !!reportData.dataFlowGraph,
+      blueprint: !!reportData.blueprint,
+    });
     
     return NextResponse.json({
       success: true,

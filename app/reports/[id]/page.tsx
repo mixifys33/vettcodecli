@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import HierarchicalReportViewer from "@/components/HierarchicalReportViewer";
+import StructuredReportViewer from "@/components/report/StructuredReportViewer";
 import CompactReportHeader from "@/components/CompactReportHeader";
 import AIAssistant from "@/components/AIAssistant";
 import ResizablePanel from "@/components/ResizablePanel";
@@ -392,17 +393,29 @@ How should I prioritize and address these ${context.severity} severity issues?`;
         )}
         
         <div className={showAI ? "" : ""}>
-          {/* Report Content */}
+          {/* Report Content - Use Structured Viewer for new format, Legacy for old */}
           <div>
-            <HierarchicalReportViewer 
-              report={report}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              activeSeverityFilter={activeSeverityFilter}
-              onSeverityFilterChange={setActiveSeverityFilter}
-              hideHeader={isScrolled}
-              onAskAI={handleAskAI}
-            />
+            {report.format === 'structured' || report.structured || report.rootCauses ? (
+              <StructuredReportViewer 
+                report={report}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                activeSeverityFilter={activeSeverityFilter}
+                onSeverityFilterChange={setActiveSeverityFilter}
+                hideHeader={isScrolled}
+                onAskAI={handleAskAI}
+              />
+            ) : (
+              <HierarchicalReportViewer 
+                report={report}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                activeSeverityFilter={activeSeverityFilter}
+                onSeverityFilterChange={setActiveSeverityFilter}
+                hideHeader={isScrolled}
+                onAskAI={handleAskAI}
+              />
+            )}
           </div>
         </div>
       </div>
